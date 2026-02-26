@@ -15,7 +15,7 @@ type Phase = 'idle' | 'outline' | 'researching' | 'compiling' | 'pdf' | 'complet
 interface SectionState {
   readonly id: string
   readonly title: string
-  readonly status: 'pending' | 'searching' | 'analyzing' | 'complete' | 'error'
+  readonly status: 'pending' | 'searching' | 'analyzing' | 'deepening' | 'refining' | 'complete' | 'error'
   readonly sourcesFound?: number
   readonly message: string
 }
@@ -52,6 +52,8 @@ function getSectionStatusLabel(status: SectionState['status']): string {
     pending: '대기',
     searching: '검색 중...',
     analyzing: '분석 중...',
+    deepening: '심화 검색 중...',
+    refining: '품질 개선 중...',
     complete: '완료',
     error: '오류',
   }
@@ -63,6 +65,8 @@ function getSectionStatusColor(status: SectionState['status']): string {
     pending: 'text-gray-500',
     searching: 'text-blue-400',
     analyzing: 'text-amber-400',
+    deepening: 'text-cyan-400',
+    refining: 'text-purple-400',
     complete: 'text-green-400',
     error: 'text-red-400',
   }
@@ -218,7 +222,7 @@ export function DeepResearchPanel({ projectId, status, onStatusChange }: DeepRes
                   <span className="text-gray-200 font-medium">{section.title}</span>
                   <div className="flex items-center gap-3">
                     <span className={`font-medium ${getSectionStatusColor(section.status)}`}>
-                      {section.status === 'searching' || section.status === 'analyzing' ? (
+                      {section.status === 'searching' || section.status === 'analyzing' || section.status === 'deepening' || section.status === 'refining' ? (
                         <span className="inline-flex items-center gap-1">
                           <span className="w-2 h-2 rounded-full bg-current animate-pulse" />
                           {getSectionStatusLabel(section.status)}

@@ -1,5 +1,5 @@
 import type { ProjectConfig, ReportMeta } from '@/types'
-import type { ReportOutline, SectionResearchResult, DeepReportMeta, DeepReportSectionMeta } from './types'
+import type { ReportOutline, SectionResearchResult, SourceReference, DeepReportMeta, DeepReportSectionMeta } from './types'
 import { callClaudeAsync } from './claude-async'
 import {
   getDeepReportSection,
@@ -81,10 +81,29 @@ export async function generateConclusion(
   return callClaudeAsync(prompt, { model: 'opus' })
 }
 
+function buildGlobalReferences(allSources: readonly SourceReference[]): string {
+  if (allSources.length === 0) return ''
+
+  const seen = new Set<string>()
+  const unique: SourceReference[] = []
+  for (const s of allSources) {
+    if (seen.has(s.url)) continue
+    seen.add(s.url)
+    unique.push(s)
+  }
+
+  const lines = unique.map((s, i) =>
+    `${i + 1}. [${s.title}](${s.url}) — ${s.source}, ${s.publishedAt}`
+  )
+
+  return `## 참고 자료\n\n${lines.join('\n')}\n`
+}
+
 export function buildMergedMarkdown(
   projectId: string,
   reportId: string,
   meta: DeepReportMeta,
+  allSources?: readonly SourceReference[],
 ): string {
   const parts: string[] = []
 
@@ -107,6 +126,10 @@ export function buildMergedMarkdown(
   const conclusion = getDeepReportSection(projectId, reportId, 'conclusion')
   if (conclusion) {
     parts.push(`## 결론 및 전망\n\n${conclusion}\n`)
+  }
+
+  if (allSources && allSources.length > 0) {
+    parts.push(buildGlobalReferences(allSources))
   }
 
   return parts.join('\n')

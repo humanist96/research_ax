@@ -112,8 +112,9 @@ export async function runDeepResearch(
     const finalMeta = buildDeepReportMetaFull(reportId, outline, results, sectionStatuses)
     saveDeepReportMeta(projectId, reportId, finalMeta)
 
-    // Build and save merged markdown
-    const mergedMd = buildMergedMarkdown(projectId, reportId, finalMeta)
+    // Build and save merged markdown (with global references)
+    const allSources = results.flatMap((r) => r.sources)
+    const mergedMd = buildMergedMarkdown(projectId, reportId, finalMeta, allSources)
     saveDeepReportMerged(projectId, reportId, 'md', mergedMd)
 
     // Also save as flat .md for backward compatibility with ReportList

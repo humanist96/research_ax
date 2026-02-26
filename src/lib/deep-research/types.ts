@@ -45,7 +45,7 @@ export interface DeepReportSectionMeta {
 export type DeepResearchEvent =
   | { readonly type: 'phase'; readonly phase: 'outline' | 'researching' | 'compiling' | 'pdf' | 'complete' | 'error'; readonly message: string }
   | { readonly type: 'outline'; readonly outline: ReportOutline }
-  | { readonly type: 'section_status'; readonly sectionId: string; readonly status: 'pending' | 'searching' | 'analyzing' | 'complete' | 'error'; readonly sourcesFound?: number; readonly message: string }
+  | { readonly type: 'section_status'; readonly sectionId: string; readonly status: 'pending' | 'searching' | 'analyzing' | 'deepening' | 'refining' | 'complete' | 'error'; readonly sourcesFound?: number; readonly message: string }
   | { readonly type: 'section_saved'; readonly sectionId: string; readonly title: string }
   | { readonly type: 'report_complete'; readonly reportId: string }
   | { readonly type: 'error'; readonly message: string }
