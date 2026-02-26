@@ -5,6 +5,7 @@ import { fetchAllFeeds } from './rss-fetcher'
 import { isNaverAvailable, searchNaverNewsMulti, searchNaverBlogMulti } from './naver-search'
 import { isDaumAvailable, searchDaumWebMulti, searchDaumBlogMulti } from './daum-search'
 import { enrichSearchResults } from './article-extractor'
+import { RSS_SOURCES } from '@/lib/config/sources'
 
 const DEFAULT_MAX_PER_SOURCE = 20
 const DEFAULT_ENRICH_CONCURRENCY = 5
@@ -81,9 +82,17 @@ export async function aggregateSearch(
     )
   }
 
-  if (sourceConfig.rss !== false && config.rssSources.length > 0) {
+  if (sourceConfig.rss !== false) {
+    const rssSources = config.rssSources.length > 0 ? config.rssSources : RSS_SOURCES
     searchTasks.push(
-      fetchAllFeeds(config.rssSources)
+      fetchAllFeeds(rssSources)
+        .then((results) => {
+          if (results.length === 0 && rssSources !== RSS_SOURCES && RSS_SOURCES.length > 0) {
+            console.log('[Aggregator] RSS: project feeds returned 0, trying default feeds...')
+            return fetchAllFeeds(RSS_SOURCES)
+          }
+          return results
+        })
         .then((results) => {
           console.log(`[Aggregator] RSS: ${results.length} results`)
           return results

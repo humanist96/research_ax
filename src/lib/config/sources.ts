@@ -2,24 +2,24 @@ import type { RssSource } from '@/types'
 
 export const RSS_SOURCES: readonly RssSource[] = [
   {
-    name: '한국경제 증권',
-    url: 'https://rss.hankyung.com/stock.xml',
+    name: '조선일보 경제',
+    url: 'https://www.chosun.com/arc/outboundfeeds/rss/category/economy/?outputType=xml',
+    category: 'economy',
+  },
+  {
+    name: '경향신문 경제',
+    url: 'https://www.khan.co.kr/rss/rssdata/economy_news.xml',
+    category: 'economy',
+  },
+  {
+    name: '동아일보 경제',
+    url: 'https://rss.donga.com/economy.xml',
+    category: 'economy',
+  },
+  {
+    name: '서울경제',
+    url: 'https://www.sedaily.com/RSS/Economy',
     category: 'stock',
-  },
-  {
-    name: '한국경제 IT',
-    url: 'https://rss.hankyung.com/it.xml',
-    category: 'it',
-  },
-  {
-    name: '매일경제 증권',
-    url: 'https://file.mk.co.kr/news/rss/rss_50200011.xml',
-    category: 'stock',
-  },
-  {
-    name: '파이낸셜뉴스',
-    url: 'https://www.fnnews.com/rss/fn_realnews_it.xml',
-    category: 'it',
   },
 ] as const
 
