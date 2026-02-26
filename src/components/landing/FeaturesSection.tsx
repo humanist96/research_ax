@@ -52,7 +52,7 @@ export function FeaturesSection() {
       <div className="max-w-6xl mx-auto">
         <AnimatedSection className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-            강력한 리서치 파이프라인
+            강력한 리서치 엔진
           </h2>
           <p className="text-gray-400 max-w-2xl mx-auto text-lg">
             뉴스 수집부터 AI 분석, 보고서 생성까지 모든 과정을 자동화합니다

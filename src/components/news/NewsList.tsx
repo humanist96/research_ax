@@ -11,7 +11,7 @@ export function NewsList({ articles, categoryLabels }: NewsListProps) {
     return (
       <div className="text-center py-12 text-gray-500">
         <p className="text-lg mb-2">수집된 뉴스가 없습니다</p>
-        <p className="text-sm">파이프라인을 실행하여 뉴스를 수집해주세요.</p>
+        <p className="text-sm">패스트 리서치를 실행하여 뉴스를 수집해주세요.</p>
       </div>
     )
   }

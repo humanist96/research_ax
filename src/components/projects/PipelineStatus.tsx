@@ -193,13 +193,13 @@ export function PipelineStatus({ projectId, status, onStatusChange }: PipelineSt
   return (
     <div className="glass rounded-xl p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-white">파이프라인</h3>
+        <h3 className="font-semibold text-white">패스트 리서치</h3>
         <button
           onClick={runPipeline}
           disabled={isRunning || isPipelineActive}
           className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-violet-500 text-white rounded-lg hover:from-indigo-600 hover:to-violet-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-all"
         >
-          {isRunning || isPipelineActive ? '실행 중...' : '파이프라인 실행'}
+          {isRunning || isPipelineActive ? '실행 중...' : '패스트 리서치 실행'}
         </button>
       </div>
 

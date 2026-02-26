@@ -38,7 +38,7 @@ export function FlowSection() {
             간단한 4단계 워크플로우
           </h2>
           <p className="text-gray-400 max-w-2xl mx-auto text-lg">
-            복잡한 리서치 과정을 직관적인 파이프라인으로 자동화
+            복잡한 리서치 과정을 직관적인 워크플로우로 자동화
           </p>
         </AnimatedSection>
 
