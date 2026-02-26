@@ -1,5 +1,5 @@
 import type { ProjectConfig } from '@/types'
-import type { ReportOutline } from './types'
+import type { ReportOutline, OutlineSection } from './types'
 import { callClaudeAsync } from './claude-async'
 
 function buildOutlinePrompt(config: ProjectConfig): string {
@@ -91,4 +91,77 @@ export async function generateOutline(config: ProjectConfig): Promise<ReportOutl
   const prompt = buildOutlinePrompt(config)
   const response = await callClaudeAsync(prompt, { model: 'opus' })
   return parseOutlineResponse(response)
+}
+
+function buildRegenerateSectionPrompt(
+  config: ProjectConfig,
+  outline: ReportOutline,
+  sectionId: string,
+): string {
+  const targetSection = outline.sections.find((s) => s.id === sectionId)
+  const otherSections = outline.sections
+    .filter((s) => s.id !== sectionId)
+    .map((s) => `- ${s.title}: ${s.description}`)
+    .join('\n')
+
+  return `당신은 전문 리서치 보고서의 목차를 설계하는 편집장입니다.
+
+아래 보고서의 특정 섹션을 새롭게 재구성해 주세요.
+
+## 보고서 제목
+${outline.title}
+
+## 도메인 컨텍스트
+${config.domainContext}
+
+## 기존 다른 섹션들 (중복 방지용)
+${otherSections}
+
+## 재생성 대상 섹션
+ID: ${sectionId}
+기존 제목: ${targetSection?.title ?? '(알 수 없음)'}
+기존 설명: ${targetSection?.description ?? ''}
+
+## 요구사항
+- 기존 다른 섹션들과 내용이 중복되지 않도록 새로운 관점으로 작성
+- 2~3개의 구체적인 Google News 검색 쿼리 포함 (한국어)
+- 2~4개의 핵심 포인트 포함
+- 섹션 ID는 그대로 유지: ${sectionId}
+
+반드시 아래 JSON 형식으로만 출력하세요:
+\`\`\`json
+{
+  "id": "${sectionId}",
+  "title": "새 섹션 제목",
+  "description": "이 섹션에서 다루는 내용 설명",
+  "searchQueries": ["검색어1", "검색어2"],
+  "keyPoints": ["핵심포인트1", "핵심포인트2", "핵심포인트3"]
+}
+\`\`\``
+}
+
+function parseSectionResponse(text: string): OutlineSection {
+  const jsonMatch = text.match(/\{[\s\S]*\}/)
+  if (!jsonMatch) {
+    throw new Error('Failed to parse section JSON from Claude response')
+  }
+
+  const s = JSON.parse(jsonMatch[0])
+  return {
+    id: String(s.id ?? 'section'),
+    title: String(s.title ?? ''),
+    description: String(s.description ?? ''),
+    searchQueries: Array.isArray(s.searchQueries) ? s.searchQueries.map(String).slice(0, 3) : [],
+    keyPoints: Array.isArray(s.keyPoints) ? s.keyPoints.map(String).slice(0, 4) : [],
+  }
+}
+
+export async function regenerateSection(
+  config: ProjectConfig,
+  outline: ReportOutline,
+  sectionId: string,
+): Promise<OutlineSection> {
+  const prompt = buildRegenerateSectionPrompt(config, outline, sectionId)
+  const response = await callClaudeAsync(prompt, { model: 'opus' })
+  return parseSectionResponse(response)
 }

@@ -1,10 +1,10 @@
 import { NextRequest } from 'next/server'
 import { getProject, setProjectStatus } from '@/lib/project/store'
 import { runDeepResearch } from '@/lib/deep-research/orchestrator'
-import type { DeepResearchEvent } from '@/lib/deep-research/types'
+import type { DeepResearchEvent, ReportOutline } from '@/lib/deep-research/types'
 
 export async function POST(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params
@@ -31,6 +31,16 @@ export async function POST(
     )
   }
 
+  let providedOutline: ReportOutline | undefined
+  try {
+    const body = await request.json() as { outline?: ReportOutline }
+    if (body.outline) {
+      providedOutline = body.outline
+    }
+  } catch {
+    // No body or invalid JSON — proceed without outline
+  }
+
   setProjectStatus(id, 'researching')
 
   const config = project.config
@@ -48,7 +58,7 @@ export async function POST(
         }
       }
 
-      runDeepResearch(id, config, emit).finally(() => {
+      runDeepResearch(id, config, emit, providedOutline).finally(() => {
         try {
           controller.close()
         } catch {

@@ -2,7 +2,8 @@
 
 import { useState, useCallback } from 'react'
 import type { ProjectStatus } from '@/types'
-import type { DeepResearchEvent } from '@/lib/deep-research/types'
+import type { DeepResearchEvent, ReportOutline } from '@/lib/deep-research/types'
+import { OutlineEditor } from './OutlineEditor'
 
 interface DeepResearchPanelProps {
   readonly projectId: string
@@ -10,7 +11,16 @@ interface DeepResearchPanelProps {
   readonly onStatusChange: (status: ProjectStatus) => void
 }
 
-type Phase = 'idle' | 'outline' | 'researching' | 'compiling' | 'pdf' | 'complete' | 'error'
+type Phase =
+  | 'idle'
+  | 'generating_outline'
+  | 'editing_outline'
+  | 'outline'
+  | 'researching'
+  | 'compiling'
+  | 'pdf'
+  | 'complete'
+  | 'error'
 
 interface SectionState {
   readonly id: string
@@ -21,7 +31,8 @@ interface SectionState {
 }
 
 const PHASE_STEPS = [
-  { key: 'outline' as const, label: '목차 생성' },
+  { key: 'generating_outline' as const, label: '목차 생성' },
+  { key: 'editing_outline' as const, label: '목차 편집' },
   { key: 'researching' as const, label: '섹션 리서치' },
   { key: 'compiling' as const, label: '보고서 작성' },
   { key: 'pdf' as const, label: 'PDF 생성' },
@@ -30,11 +41,13 @@ const PHASE_STEPS = [
 function getPhaseIndex(phase: Phase): number {
   const map: Record<Phase, number> = {
     idle: -1,
+    generating_outline: 0,
+    editing_outline: 1,
     outline: 0,
-    researching: 1,
-    compiling: 2,
-    pdf: 3,
-    complete: 4,
+    researching: 2,
+    compiling: 3,
+    pdf: 4,
+    complete: 5,
     error: -1,
   }
   return map[phase]
@@ -78,12 +91,61 @@ export function DeepResearchPanel({ projectId, status, onStatusChange }: DeepRes
   const [sections, setSections] = useState<SectionState[]>([])
   const [error, setError] = useState<string | null>(null)
   const [reportId, setReportId] = useState<string | null>(null)
+  const [outline, setOutline] = useState<ReportOutline | null>(null)
+  const [isRegeneratingOutline, setIsRegeneratingOutline] = useState(false)
 
-  const isRunning = phase !== 'idle' && phase !== 'complete' && phase !== 'error'
-  const isDisabled = isRunning || status === 'researching' || status === 'collecting' || status === 'analyzing' || status === 'reporting'
+  const isRunning = phase !== 'idle' && phase !== 'complete' && phase !== 'error' && phase !== 'editing_outline'
+  const isDisabled = isRunning || phase === 'editing_outline' || status === 'researching' || status === 'collecting' || status === 'analyzing' || status === 'reporting'
 
-  const startResearch = useCallback(async () => {
-    setPhase('outline')
+  const generateOutline = useCallback(async () => {
+    setPhase('generating_outline')
+    setError(null)
+    setSections([])
+    setReportId(null)
+    setOutline(null)
+
+    try {
+      const res = await fetch(`/api/projects/${projectId}/deep-research/outline`, {
+        method: 'POST',
+      })
+
+      const data = await res.json()
+      if (!data.success) {
+        throw new Error(data.error ?? `HTTP ${res.status}`)
+      }
+
+      setOutline(data.data)
+      setPhase('editing_outline')
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      setError(msg)
+      setPhase('error')
+    }
+  }, [projectId])
+
+  const regenerateFullOutline = useCallback(async () => {
+    setIsRegeneratingOutline(true)
+    try {
+      const res = await fetch(`/api/projects/${projectId}/deep-research/outline`, {
+        method: 'POST',
+      })
+
+      const data = await res.json()
+      if (!data.success) {
+        throw new Error(data.error ?? `HTTP ${res.status}`)
+      }
+
+      setOutline(data.data)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      setError(msg)
+    } finally {
+      setIsRegeneratingOutline(false)
+    }
+  }, [projectId])
+
+  const startResearchWithOutline = useCallback(async (editedOutline: ReportOutline) => {
+    setPhase('researching')
     setError(null)
     setSections([])
     setReportId(null)
@@ -91,6 +153,8 @@ export function DeepResearchPanel({ projectId, status, onStatusChange }: DeepRes
     try {
       const res = await fetch(`/api/projects/${projectId}/deep-research`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ outline: editedOutline }),
       })
 
       if (!res.ok) {
@@ -120,7 +184,8 @@ export function DeepResearchPanel({ projectId, status, onStatusChange }: DeepRes
             const event: DeepResearchEvent = JSON.parse(jsonStr)
 
             if (event.type === 'phase') {
-              setPhase(event.phase as Phase)
+              const mappedPhase = event.phase as Phase
+              setPhase(mappedPhase)
               if (event.phase === 'complete') {
                 onStatusChange('complete')
               } else if (event.phase === 'error') {
@@ -174,7 +239,7 @@ export function DeepResearchPanel({ projectId, status, onStatusChange }: DeepRes
           </p>
         </div>
         <button
-          onClick={startResearch}
+          onClick={generateOutline}
           disabled={isDisabled}
           className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-violet-500 text-white rounded-lg hover:from-indigo-600 hover:to-violet-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-all"
         >
@@ -189,14 +254,14 @@ export function DeepResearchPanel({ projectId, status, onStatusChange }: DeepRes
               const stepStatus = getStepStatus(i, currentPhaseIdx, phase)
               return (
                 <div key={step.key} className="flex items-center gap-2 flex-1">
-                  <div className={`flex items-center gap-2 flex-1 p-3 rounded-lg text-sm ${
+                  <div className={`flex items-center gap-2 flex-1 p-2 rounded-lg text-xs ${
                     stepStatus === 'done'
                       ? 'bg-green-500/10 text-green-400'
                       : stepStatus === 'active'
                       ? 'bg-indigo-500/10 text-indigo-400'
                       : 'bg-white/5 text-gray-500'
                   }`}>
-                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
                       stepStatus === 'done'
                         ? 'bg-green-500 text-white'
                         : stepStatus === 'active'
@@ -205,17 +270,34 @@ export function DeepResearchPanel({ projectId, status, onStatusChange }: DeepRes
                     }`}>
                       {stepStatus === 'done' ? '\u2713' : i + 1}
                     </span>
-                    <span className="font-medium">{step.label}</span>
+                    <span className="font-medium truncate">{step.label}</span>
                   </div>
                   {i < PHASE_STEPS.length - 1 && (
-                    <span className="text-gray-600">&rarr;</span>
+                    <span className="text-gray-600 shrink-0">&rarr;</span>
                   )}
                 </div>
               )
             })}
           </div>
 
-          {sections.length > 0 && (
+          {phase === 'generating_outline' && (
+            <div className="flex items-center gap-3 py-8 justify-center text-gray-400 text-sm">
+              <span className="w-5 h-5 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+              목차를 생성하고 있습니다...
+            </div>
+          )}
+
+          {phase === 'editing_outline' && outline && (
+            <OutlineEditor
+              projectId={projectId}
+              outline={outline}
+              onStartResearch={startResearchWithOutline}
+              onRegenerate={regenerateFullOutline}
+              isRegenerating={isRegeneratingOutline}
+            />
+          )}
+
+          {sections.length > 0 && phase !== 'editing_outline' && (
             <div className="border border-white/10 rounded-lg divide-y divide-white/10">
               {sections.map((section) => (
                 <div key={section.id} className="flex items-center justify-between px-4 py-3 text-sm">
@@ -240,7 +322,7 @@ export function DeepResearchPanel({ projectId, status, onStatusChange }: DeepRes
             </div>
           )}
 
-          {sections.length > 0 && (
+          {sections.length > 0 && phase !== 'editing_outline' && (
             <p className="mt-3 text-sm text-gray-500">
               {completedSections}/{sections.length} 섹션 완료
             </p>

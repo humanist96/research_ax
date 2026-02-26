@@ -1,6 +1,6 @@
 import * as crypto from 'crypto'
 import type { ProjectConfig } from '@/types'
-import type { DeepResearchEvent, SectionResearchResult } from './types'
+import type { DeepResearchEvent, ReportOutline, SectionResearchResult } from './types'
 import { generateOutline } from './outline-generator'
 import { researchSection } from './section-researcher'
 import {
@@ -25,15 +25,22 @@ export async function runDeepResearch(
   projectId: string,
   config: ProjectConfig,
   emit: (event: DeepResearchEvent) => void,
+  providedOutline?: ReportOutline,
 ): Promise<void> {
   const reportId = `deep-${crypto.randomBytes(6).toString('hex')}`
 
   try {
-    // Phase 1: Outline generation (Opus)
-    emit({ type: 'phase', phase: 'outline', message: '보고서 목차를 생성하고 있습니다...' })
+    // Phase 1: Outline generation (Opus) — skip if outline provided
+    let outline: ReportOutline
 
-    const outline = await generateOutline(config)
-    emit({ type: 'outline', outline })
+    if (providedOutline) {
+      outline = providedOutline
+      emit({ type: 'outline', outline })
+    } else {
+      emit({ type: 'phase', phase: 'outline', message: '보고서 목차를 생성하고 있습니다...' })
+      outline = await generateOutline(config)
+      emit({ type: 'outline', outline })
+    }
 
     for (const section of outline.sections) {
       emit({ type: 'section_status', sectionId: section.id, status: 'pending', message: '대기 중' })
