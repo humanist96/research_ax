@@ -25,6 +25,7 @@ export interface AggregateSearchOptions {
   readonly maxResultsPerSource?: number
   readonly enrichBodies?: boolean
   readonly maxEnrichConcurrency?: number
+  readonly onSourceComplete?: (source: string, count: number) => void
 }
 
 export interface CollectionSourceConfig {

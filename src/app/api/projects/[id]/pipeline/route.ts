@@ -1,59 +1,67 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { execSync } from 'child_process'
+import { NextRequest } from 'next/server'
 import { getProject, setProjectStatus } from '@/lib/project/store'
+import { runPipeline } from '@/lib/pipeline/orchestrator'
+import type { PipelineEvent } from '@/lib/pipeline/types'
 
 export async function POST(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  try {
-    const { id } = await params
-    const project = getProject(id)
-    if (!project) {
-      return NextResponse.json(
-        { success: false, error: 'Project not found' },
-        { status: 404 }
-      )
-    }
+  const { id } = await params
+  const project = getProject(id)
 
-    if (!project.config) {
-      return NextResponse.json(
-        { success: false, error: 'Project has no config. Finalize first.' },
-        { status: 400 }
-      )
-    }
-
-    try {
-      setProjectStatus(id, 'collecting')
-      execSync(`tsx scripts/collect.ts --project-id ${id}`, {
-        cwd: process.cwd(),
-        timeout: 300000,
-        stdio: 'pipe',
-      })
-
-      setProjectStatus(id, 'analyzing')
-      execSync(`tsx scripts/analyze.ts --project-id ${id}`, {
-        cwd: process.cwd(),
-        timeout: 300000,
-        stdio: 'pipe',
-      })
-
-      setProjectStatus(id, 'reporting')
-      execSync(`tsx scripts/generate-report.ts --project-id ${id}`, {
-        cwd: process.cwd(),
-        timeout: 300000,
-        stdio: 'pipe',
-      })
-
-      setProjectStatus(id, 'complete')
-      const updated = getProject(id)
-      return NextResponse.json({ success: true, data: updated })
-    } catch (error) {
-      setProjectStatus(id, 'error')
-      throw error
-    }
-  } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error)
-    return NextResponse.json({ success: false, error: msg }, { status: 500 })
+  if (!project) {
+    return new Response(
+      JSON.stringify({ success: false, error: 'Project not found' }),
+      { status: 404, headers: { 'Content-Type': 'application/json' } },
+    )
   }
+
+  if (!project.config) {
+    return new Response(
+      JSON.stringify({ success: false, error: 'Project has no config. Finalize first.' }),
+      { status: 400, headers: { 'Content-Type': 'application/json' } },
+    )
+  }
+
+  const activeStatuses = ['collecting', 'analyzing', 'reporting']
+  if (activeStatuses.includes(project.status)) {
+    return new Response(
+      JSON.stringify({ success: false, error: 'Pipeline is already running' }),
+      { status: 409, headers: { 'Content-Type': 'application/json' } },
+    )
+  }
+
+  const config = project.config
+
+  const stream = new ReadableStream({
+    start(controller) {
+      const encoder = new TextEncoder()
+
+      function emit(event: PipelineEvent): void {
+        const sseData = `data: ${JSON.stringify(event)}\n\n`
+        try {
+          controller.enqueue(encoder.encode(sseData))
+        } catch {
+          // Stream may have been closed by client disconnect
+        }
+      }
+
+      runPipeline(id, config, emit).finally(() => {
+        try {
+          controller.close()
+        } catch {
+          // Already closed
+        }
+      })
+    },
+  })
+
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+    },
+  })
 }

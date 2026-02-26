@@ -77,6 +77,7 @@ export async function aggregateSearch(
       searchGoogleNewsMulti(options.queries, searchOptions)
         .then((results) => {
           console.log(`[Aggregator] Google News: ${results.length} results`)
+          options.onSourceComplete?.('Google News', results.length)
           return results
         })
     )
@@ -95,6 +96,7 @@ export async function aggregateSearch(
         })
         .then((results) => {
           console.log(`[Aggregator] RSS: ${results.length} results`)
+          options.onSourceComplete?.('RSS', results.length)
           return results
         })
     )
@@ -105,6 +107,7 @@ export async function aggregateSearch(
       searchNaverNewsMulti(options.queries, searchOptions)
         .then((results) => {
           console.log(`[Aggregator] Naver News: ${results.length} results`)
+          options.onSourceComplete?.('Naver News', results.length)
           return results
         })
     )
@@ -115,6 +118,7 @@ export async function aggregateSearch(
       searchNaverBlogMulti(options.queries, searchOptions)
         .then((results) => {
           console.log(`[Aggregator] Naver Blog: ${results.length} results`)
+          options.onSourceComplete?.('Naver Blog', results.length)
           return results
         })
     )
@@ -125,6 +129,7 @@ export async function aggregateSearch(
       searchDaumWebMulti(options.queries, searchOptions)
         .then((results) => {
           console.log(`[Aggregator] Daum Web: ${results.length} results`)
+          options.onSourceComplete?.('Daum Web', results.length)
           return results
         })
     )
@@ -135,6 +140,7 @@ export async function aggregateSearch(
       searchDaumBlogMulti(options.queries, searchOptions)
         .then((results) => {
           console.log(`[Aggregator] Daum Blog: ${results.length} results`)
+          options.onSourceComplete?.('Daum Blog', results.length)
           return results
         })
     )
