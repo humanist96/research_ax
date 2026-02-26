@@ -2,6 +2,7 @@ import type { ProjectConfig } from '@/types'
 import type { OutlineSection, SectionResearchResult, SourceReference } from './types'
 import { searchForSection } from '@/lib/collector/aggregator'
 import { callClaudeAsync } from './claude-async'
+import { filterRelevantArticles } from './relevance-filter'
 
 type SectionProgress = (status: 'searching' | 'analyzing' | 'deepening' | 'refining', message: string, sourcesFound?: number) => void
 
@@ -242,13 +243,17 @@ export async function researchSection(
     }
   }
 
-  const initialArticles: ArticleItem[] = searchResults.map((r) => ({
+  const rawArticles: ArticleItem[] = searchResults.map((r) => ({
     title: r.title,
     content: r.content,
     link: r.link,
     source: r.source,
     pubDate: r.pubDate,
   }))
+
+  // Step 1.5: Relevance filtering (Haiku)
+  const initialArticles = await filterRelevantArticles(section, rawArticles)
+  onProgress?.('analyzing', `${sourcesFound}건 중 ${initialArticles.length}건 선별, 분석 중...`, initialArticles.length)
 
   // Step 2: Initial analysis (Opus)
   const analysisPrompt = buildSectionAnalysisPrompt(section, initialArticles, config)
@@ -268,7 +273,7 @@ export async function researchSection(
     const additionalResults = await searchForSection(gapResult.followUpQueries, config)
 
     if (additionalResults.length > 0) {
-      const additionalArticles: ArticleItem[] = additionalResults.map((r) => ({
+      const rawAdditionalArticles: ArticleItem[] = additionalResults.map((r) => ({
         title: r.title,
         content: r.content,
         link: r.link,
@@ -276,9 +281,10 @@ export async function researchSection(
         pubDate: r.pubDate,
       }))
 
+      const additionalArticles = await filterRelevantArticles(section, rawAdditionalArticles)
       allArticles = deduplicateArticles([...initialArticles, ...additionalArticles]) as ArticleItem[]
 
-      onProgress?.('deepening', `${additionalResults.length}건 추가 기사 통합 분석 중...`, allArticles.length)
+      onProgress?.('deepening', `추가 ${additionalResults.length}건 중 ${additionalArticles.length}건 선별, 통합 분석 중...`, allArticles.length)
 
       // Re-analyze with all articles (Opus)
       const integratedPrompt = buildIntegratedAnalysisPrompt(
