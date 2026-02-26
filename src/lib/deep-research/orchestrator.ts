@@ -51,7 +51,7 @@ export async function runDeepResearch(
     // Phase 2: Section research (Opus, max 2 concurrent)
     emit({ type: 'phase', phase: 'researching', message: '섹션별 리서치를 진행하고 있습니다...' })
 
-    const limiter = createConcurrencyLimiter(2)
+    const limiter = createConcurrencyLimiter(outline.sections.length)
     const results: SectionResearchResult[] = []
     const sectionStatuses = new Map<string, 'complete' | 'error'>()
 
