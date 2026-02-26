@@ -52,7 +52,10 @@ ${conversationContext}
   "domainContext": "이 리서치의 도메인 컨텍스트 설명 (분석 AI에게 제공)",
   "reportTitle": "리포트 제목",
   "keywordWeights": {"primary": 3, "secondary": 1, "entity": 2},
-  "minRelevanceScore": 3
+  "minRelevanceScore": 3,
+  "collectionSources": {"googleNews": true, "rss": true, "naverNews": true, "naverBlog": false, "daumWeb": false, "daumBlog": false},
+  "enrichArticles": false,
+  "maxArticlesPerSource": 20
 }
 
 카테고리는 4-8개, "other" 카테고리는 반드시 포함하세요.
@@ -88,6 +91,16 @@ JSON만 출력하세요.`
         entity: parsed.keywordWeights?.entity ?? 2,
       },
       minRelevanceScore: parsed.minRelevanceScore ?? 3,
+      collectionSources: parsed.collectionSources ?? {
+        googleNews: true,
+        rss: true,
+        naverNews: true,
+        naverBlog: false,
+        daumWeb: false,
+        daumBlog: false,
+      },
+      enrichArticles: parsed.enrichArticles ?? false,
+      maxArticlesPerSource: parsed.maxArticlesPerSource ?? 20,
     }
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error)

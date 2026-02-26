@@ -1,6 +1,6 @@
 import type { ProjectConfig } from '@/types'
 import type { OutlineSection, SectionResearchResult, SourceReference } from './types'
-import { searchDynamicQueries } from '@/lib/collector/web-search'
+import { searchForSection } from '@/lib/collector/aggregator'
 import { callClaudeAsync } from './claude-async'
 
 type SectionProgress = (status: 'searching' | 'analyzing', message: string, sourcesFound?: number) => void
@@ -49,7 +49,7 @@ export async function researchSection(
 ): Promise<SectionResearchResult> {
   onProgress?.('searching', `"${section.title}" 검색 중...`)
 
-  const searchResults = await searchDynamicQueries(section.searchQueries)
+  const searchResults = await searchForSection(section.searchQueries, config)
 
   const sourcesFound = searchResults.length
   onProgress?.('analyzing', `${sourcesFound}건 기사 분석 중...`, sourcesFound)

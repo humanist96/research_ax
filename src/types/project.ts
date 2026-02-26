@@ -1,4 +1,5 @@
 import type { RssSource } from './index'
+import type { CollectionSourceConfig } from '@/lib/collector/types'
 
 export interface ResearchProject {
   readonly id: string
@@ -45,6 +46,9 @@ export interface ProjectConfig {
     readonly entity: number
   }
   readonly minRelevanceScore: number
+  readonly collectionSources?: CollectionSourceConfig
+  readonly enrichArticles?: boolean
+  readonly maxArticlesPerSource?: number
 }
 
 export interface CategoryDefinition {

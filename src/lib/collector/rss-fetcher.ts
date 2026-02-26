@@ -1,13 +1,6 @@
 import Parser from 'rss-parser'
 import type { RssSource } from '@/types'
-
-interface RssItem {
-  readonly title: string
-  readonly link: string
-  readonly content: string
-  readonly pubDate: string
-  readonly source: string
-}
+import type { SearchResult } from './types'
 
 const parser = new Parser({
   timeout: 10000,
@@ -16,7 +9,7 @@ const parser = new Parser({
   },
 })
 
-export async function fetchRssFeed(source: RssSource): Promise<readonly RssItem[]> {
+export async function fetchRssFeed(source: RssSource): Promise<readonly SearchResult[]> {
   try {
     const feed = await parser.parseURL(source.url)
     return (feed.items ?? []).map((item) => ({
@@ -25,6 +18,7 @@ export async function fetchRssFeed(source: RssSource): Promise<readonly RssItem[
       content: item.contentSnippet ?? item.content ?? '',
       pubDate: item.pubDate ?? item.isoDate ?? new Date().toISOString(),
       source: source.name,
+      sourceType: 'rss' as const,
     }))
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
@@ -35,7 +29,7 @@ export async function fetchRssFeed(source: RssSource): Promise<readonly RssItem[
 
 export async function fetchAllFeeds(
   sources: readonly RssSource[]
-): Promise<readonly RssItem[]> {
+): Promise<readonly SearchResult[]> {
   const results = await Promise.allSettled(
     sources.map((source) => fetchRssFeed(source))
   )

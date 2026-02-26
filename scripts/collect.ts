@@ -1,10 +1,11 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as crypto from 'crypto'
+import { aggregateSearch } from '../src/lib/collector/aggregator'
 import { fetchAllFeeds } from '../src/lib/collector/rss-fetcher'
-import { searchAllKeywords, searchDynamicQueries } from '../src/lib/collector/web-search'
+import { searchGoogleNewsMulti } from '../src/lib/collector/google-news'
 import { matchKeywords, matchDynamicKeywords, isRelevant } from '../src/lib/collector/keyword-matcher'
-import { RSS_SOURCES } from '../src/lib/config/sources'
+import { RSS_SOURCES, PRIMARY_KEYWORDS } from '../src/lib/config/sources'
 import {
   getProject,
   getProjectArticles,
@@ -66,37 +67,28 @@ async function collectForProject(projectId: string) {
 
   console.log(`[Collect] Existing articles: ${existingArticles.length}`)
 
-  console.log('[Collect] Fetching RSS feeds...')
-  const rssItems = await fetchAllFeeds(config.rssSources)
-  console.log(`[Collect] RSS items fetched: ${rssItems.length}`)
-
-  console.log('[Collect] Searching Google News...')
-  let searchItems: Awaited<ReturnType<typeof searchDynamicQueries>> = []
+  console.log('[Collect] Searching all sources via aggregator...')
+  let searchResults: Awaited<ReturnType<typeof aggregateSearch>> = []
   try {
-    searchItems = await searchDynamicQueries(config.searchQueries)
-    console.log(`[Collect] Search items fetched: ${searchItems.length}`)
+    searchResults = await aggregateSearch(config, {
+      queries: config.searchQueries,
+      enrichBodies: config.enrichArticles ?? false,
+      maxResultsPerSource: config.maxArticlesPerSource ?? 20,
+    })
+    console.log(`[Collect] Aggregated results: ${searchResults.length}`)
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error)
-    errors.push(`Google News search failed: ${msg}`)
-    console.error(`[Collect] Google News search failed: ${msg}`)
+    errors.push(`Aggregate search failed: ${msg}`)
+    console.error(`[Collect] Aggregate search failed: ${msg}`)
   }
 
-  const allItems = [
-    ...rssItems.map((item) => ({
-      title: item.title,
-      url: item.link,
-      content: item.content,
-      publishedAt: item.pubDate,
-      source: item.source,
-    })),
-    ...searchItems.map((item) => ({
-      title: item.title,
-      url: item.link,
-      content: item.content,
-      publishedAt: item.pubDate,
-      source: item.source,
-    })),
-  ]
+  const allItems = searchResults.map((item) => ({
+    title: item.title,
+    url: item.link,
+    content: item.content,
+    publishedAt: item.pubDate,
+    source: item.source,
+  }))
 
   console.log(`[Collect] Total items to process: ${allItems.length}`)
 
@@ -164,9 +156,9 @@ async function collectDefault() {
   console.log(`[Collect] RSS items fetched: ${rssItems.length}`)
 
   console.log('[Collect] Searching Google News...')
-  let searchItems: Awaited<ReturnType<typeof searchAllKeywords>> = []
+  let searchItems: Awaited<ReturnType<typeof searchGoogleNewsMulti>> = []
   try {
-    searchItems = await searchAllKeywords()
+    searchItems = await searchGoogleNewsMulti(PRIMARY_KEYWORDS.slice(0, 5) as unknown as string[])
     console.log(`[Collect] Search items fetched: ${searchItems.length}`)
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error)
