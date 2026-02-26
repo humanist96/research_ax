@@ -2,6 +2,7 @@ import * as crypto from 'crypto'
 import type { PipelineEvent } from './types'
 import type { ProjectConfig, Article, AnalyzedArticle, ReportIndex } from '@/types'
 import { aggregateSearch } from '@/lib/collector/aggregator'
+import { curateArticles } from '@/lib/collector/article-curator'
 import { matchDynamicKeywords, isRelevant } from '@/lib/collector/keyword-matcher'
 import { buildCategorizationPrompt, parseCategorizationResult } from '@/lib/analyzer/categorizer'
 import { buildSummarizationPrompt, parseSummarizationResult } from '@/lib/analyzer/summarizer'
@@ -248,6 +249,22 @@ export async function runPipeline(
 ): Promise<void> {
   try {
     const articlesCollected = await collectPhase(projectId, config, emit)
+
+    const CURATION_THRESHOLD = 50
+    const allArticles = getProjectArticles(projectId)
+    if (allArticles.length >= CURATION_THRESHOLD) {
+      const maxForAnalysis = config.maxArticlesForAnalysis ?? 30
+      const result = curateArticles(allArticles, maxForAnalysis)
+      saveProjectArticles(projectId, result.selected as Article[])
+      emit({
+        type: 'curation_progress',
+        before: result.totalBefore,
+        after: result.totalAfter,
+        clusters: result.clustersFound,
+        message: `${result.totalBefore}건 → ${result.totalAfter}건 (${result.clustersFound}개 클러스터, 유사 기사 제거)`,
+      })
+    }
+
     const articlesAnalyzed = await analyzePhase(projectId, config, emit)
     reportPhase(projectId, config, emit)
 

@@ -49,6 +49,7 @@ export interface ProjectConfig {
   readonly collectionSources?: CollectionSourceConfig
   readonly enrichArticles?: boolean
   readonly maxArticlesPerSource?: number
+  readonly maxArticlesForAnalysis?: number
 }
 
 export interface CategoryDefinition {
