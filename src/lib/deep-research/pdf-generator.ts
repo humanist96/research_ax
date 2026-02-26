@@ -159,6 +159,17 @@ pre code {
   padding: 0;
 }
 
+/* Mermaid diagrams */
+.mermaid {
+  text-align: center;
+  margin: 1.5em auto;
+  padding: 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  page-break-inside: avoid;
+}
+
 /* Links */
 a {
   color: #3182ce;
@@ -179,19 +190,42 @@ hr {
 }
 `
 
+function transformMermaidBlocks(html: string): string {
+  return html.replace(
+    /<pre><code class="language-mermaid">([\s\S]*?)<\/code><\/pre>/g,
+    (_match, code: string) => {
+      const decoded = code
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+      return `<pre class="mermaid">${decoded}</pre>`
+    },
+  )
+}
+
 function buildHtml(markdown: string, title: string): string {
-  const bodyHtml = marked.parse(markdown, { async: false }) as string
+  const rawHtml = marked.parse(markdown, { async: false }) as string
+  const bodyHtml = transformMermaidBlocks(rawHtml)
+  const hasMermaid = bodyHtml.includes('class="mermaid"')
   const now = new Date().toLocaleDateString('ko-KR', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   })
 
+  const mermaidScript = hasMermaid
+    ? `<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({ startOnLoad: true, theme: 'default', fontFamily: 'Pretendard, Apple SD Gothic Neo, sans-serif' });</script>`
+    : ''
+
   return `<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <style>${CSS_TEMPLATE}</style>
+  ${mermaidScript}
 </head>
 <body>
   <div class="cover">
@@ -223,6 +257,14 @@ export async function generatePDF(markdown: string, title: string): Promise<Buff
   try {
     const page = await browser.newPage()
     await page.setContent(html, { waitUntil: 'networkidle0' })
+
+    const hasMermaid = html.includes('class="mermaid"')
+    if (hasMermaid) {
+      await page.waitForFunction(
+        () => !document.querySelector('.mermaid:not([data-processed])'),
+        { timeout: 15000 },
+      ).catch(() => { /* proceed even if mermaid times out */ })
+    }
 
     const pdfBuffer = await page.pdf({
       format: 'A4',
