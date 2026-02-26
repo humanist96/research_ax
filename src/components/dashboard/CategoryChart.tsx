@@ -34,18 +34,18 @@ export function CategoryChart({ articles, categoryLabels = {} }: CategoryChartPr
   const maxCount = Math.max(...data.map((d) => d.count), 1)
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-lg font-semibold mb-4">카테고리별 분포</h2>
+    <div className="glass rounded-xl p-6">
+      <h2 className="text-lg font-semibold text-white mb-4">카테고리별 분포</h2>
       {data.length === 0 ? (
         <p className="text-gray-500 text-sm">데이터가 없습니다.</p>
       ) : (
         <div className="space-y-3">
           {data.map((item) => (
             <div key={item.category} className="flex items-center gap-3">
-              <div className="w-28 text-sm text-gray-600 shrink-0 text-right truncate" title={item.label}>
+              <div className="w-28 text-sm text-gray-400 shrink-0 text-right truncate" title={item.label}>
                 {item.label}
               </div>
-              <div className="flex-1 bg-gray-100 rounded-full h-6 overflow-hidden">
+              <div className="flex-1 bg-white/5 rounded-full h-6 overflow-hidden">
                 <div
                   className={`h-full ${item.color} rounded-full transition-all flex items-center justify-end pr-2`}
                   style={{ width: `${Math.max((item.count / maxCount) * 100, item.count > 0 ? 8 : 0)}%` }}

@@ -16,19 +16,19 @@ const STATUS_LABELS: Record<string, string> = {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  conversation: 'bg-yellow-100 text-yellow-800',
-  configuring: 'bg-yellow-100 text-yellow-800',
-  ready: 'bg-blue-100 text-blue-800',
-  collecting: 'bg-purple-100 text-purple-800',
-  analyzing: 'bg-purple-100 text-purple-800',
-  reporting: 'bg-purple-100 text-purple-800',
-  complete: 'bg-green-100 text-green-800',
-  error: 'bg-red-100 text-red-800',
+  conversation: 'bg-yellow-500/20 text-yellow-300',
+  configuring: 'bg-yellow-500/20 text-yellow-300',
+  ready: 'bg-blue-500/20 text-blue-300',
+  collecting: 'bg-purple-500/20 text-purple-300',
+  analyzing: 'bg-purple-500/20 text-purple-300',
+  reporting: 'bg-purple-500/20 text-purple-300',
+  complete: 'bg-green-500/20 text-green-300',
+  error: 'bg-red-500/20 text-red-300',
 }
 
 export function ProjectCard({ project }: ProjectCardProps) {
   const statusLabel = STATUS_LABELS[project.status] ?? project.status
-  const statusColor = STATUS_COLORS[project.status] ?? 'bg-gray-100 text-gray-800'
+  const statusColor = STATUS_COLORS[project.status] ?? 'bg-gray-500/20 text-gray-300'
   const isActive = ['collecting', 'analyzing', 'reporting', 'configuring'].includes(project.status)
 
   const href = project.status === 'conversation'
@@ -37,11 +37,11 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
   return (
     <a href={href} className="block">
-      <div className="bg-white rounded-lg shadow p-5 hover:shadow-md transition-shadow">
+      <div className="glass glass-hover rounded-xl p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-gray-900 truncate">{project.name}</h3>
-            <p className="text-sm text-gray-500 mt-1 line-clamp-2">{project.prompt}</p>
+            <h3 className="font-semibold text-white truncate">{project.name}</h3>
+            <p className="text-sm text-gray-400 mt-1 line-clamp-2">{project.prompt}</p>
           </div>
           <span className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${statusColor}`}>
             {isActive && (
@@ -50,7 +50,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
             {statusLabel}
           </span>
         </div>
-        <div className="flex items-center gap-4 mt-3 text-xs text-gray-400">
+        <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
           <span>생성: {new Date(project.createdAt).toLocaleDateString('ko-KR')}</span>
           <span>수정: {new Date(project.updatedAt).toLocaleDateString('ko-KR')}</span>
           {project.config && (

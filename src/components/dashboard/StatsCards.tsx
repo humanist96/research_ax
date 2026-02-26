@@ -1,8 +1,60 @@
+'use client'
+
+import { useEffect, useRef, useState } from 'react'
 import type { AnalyzedArticle } from '@/types'
 
 interface StatsCardsProps {
   readonly articles: readonly AnalyzedArticle[]
   readonly categoryLabels?: Record<string, string>
+}
+
+function useCountUp(end: number, duration: number = 1200) {
+  const [count, setCount] = useState(0)
+  const ref = useRef<HTMLDivElement>(null)
+  const counted = useRef(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !counted.current) {
+          counted.current = true
+          const start = performance.now()
+          function update(now: number) {
+            const elapsed = now - start
+            const progress = Math.min(elapsed / duration, 1)
+            const eased = 1 - Math.pow(1 - progress, 3)
+            setCount(Math.round(eased * end))
+            if (progress < 1) requestAnimationFrame(update)
+          }
+          requestAnimationFrame(update)
+        }
+      },
+      { threshold: 0.5 }
+    )
+
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [end, duration])
+
+  return { count, ref }
+}
+
+function StatCard({ label, value, color }: { label: string; value: string | number; color: string }) {
+  const numericValue = typeof value === 'number' ? value : 0
+  const { count, ref } = useCountUp(numericValue)
+  const displayValue = typeof value === 'number' ? count : value
+
+  return (
+    <div ref={ref} className="glass rounded-xl p-6">
+      <div className={`inline-block px-2 py-1 rounded text-white text-xs ${color} mb-2`}>
+        {label}
+      </div>
+      <div className="text-2xl font-bold text-white">{displayValue}</div>
+    </div>
+  )
 }
 
 export function StatsCards({ articles, categoryLabels = {} }: StatsCardsProps) {
@@ -32,7 +84,6 @@ export function StatsCards({ articles, categoryLabels = {} }: StatsCardsProps) {
     {
       label: '최다 카테고리',
       value: topCategoryLabel || '-',
-      sub: topCategory.count > 0 ? `${topCategory.count}건` : undefined,
       color: 'bg-orange-500',
     },
   ]
@@ -40,17 +91,7 @@ export function StatsCards({ articles, categoryLabels = {} }: StatsCardsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {stats.map((stat) => (
-        <div
-          key={stat.label}
-          className="bg-white rounded-lg shadow p-6 border-l-4"
-          style={{ borderLeftColor: 'var(--accent)' }}
-        >
-          <div className={`inline-block px-2 py-1 rounded text-white text-xs ${stat.color} mb-2`}>
-            {stat.label}
-          </div>
-          <div className="text-2xl font-bold">{stat.value}</div>
-          {stat.sub && <div className="text-sm text-gray-500">{stat.sub}</div>}
-        </div>
+        <StatCard key={stat.label} {...stat} />
       ))}
     </div>
   )

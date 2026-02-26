@@ -55,19 +55,19 @@ export function DeepReportViewer({ projectId, reportId, meta, sections, mergedCo
     `/api/projects/${projectId}/reports/${reportId}/download?format=${format}`
 
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
+    <div className="glass rounded-xl overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
         <div>
-          <h2 className="text-lg font-bold text-gray-900">{meta.title}</h2>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <h2 className="text-lg font-bold text-white">{meta.title}</h2>
+          <p className="text-sm text-gray-400 mt-0.5">
             {meta.generatedAt.split('T')[0]} · {meta.totalSources}건 소스 · {meta.sections.length}개 섹션
           </p>
         </div>
         <div className="flex items-center gap-2">
           <a
             href={downloadUrl('md')}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-300 bg-white/5 border border-white/10 rounded-md hover:bg-white/10 transition-colors"
           >
             <DownloadIcon />
             MD
@@ -85,8 +85,8 @@ export function DeepReportViewer({ projectId, reportId, meta, sections, mergedCo
       {/* Body: sidebar + content */}
       <div className="flex min-h-[600px]">
         {/* Sidebar TOC */}
-        <nav className="w-64 flex-shrink-0 border-r border-gray-200 bg-gray-50 p-4">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">목차</p>
+        <nav className="w-64 flex-shrink-0 border-r border-white/10 bg-white/[0.02] p-4">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">목차</p>
           <ul className="space-y-1">
             {sections.map((s) => (
               <li key={s.id}>
@@ -94,8 +94,8 @@ export function DeepReportViewer({ projectId, reportId, meta, sections, mergedCo
                   onClick={() => handleSelectSection(s.id)}
                   className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
                     !showAll && selectedId === s.id
-                      ? 'bg-indigo-100 text-indigo-800 font-medium'
-                      : 'text-gray-700 hover:bg-gray-100'
+                      ? 'bg-indigo-500/20 text-indigo-300 font-medium'
+                      : 'text-gray-400 hover:bg-white/5'
                   }`}
                 >
                   <span className="flex items-center gap-2">
@@ -105,20 +105,20 @@ export function DeepReportViewer({ projectId, reportId, meta, sections, mergedCo
                     <span className="truncate">{s.title}</span>
                   </span>
                   {s.sourcesCount > 0 && (
-                    <span className="text-xs text-gray-400 ml-5">{s.sourcesCount}건</span>
+                    <span className="text-xs text-gray-500 ml-5">{s.sourcesCount}건</span>
                   )}
                 </button>
               </li>
             ))}
           </ul>
 
-          <div className="mt-4 pt-4 border-t border-gray-200">
+          <div className="mt-4 pt-4 border-t border-white/10">
             <button
               onClick={handleShowAll}
               className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
                 showAll
-                  ? 'bg-indigo-100 text-indigo-800 font-medium'
-                  : 'text-gray-600 hover:bg-gray-100'
+                  ? 'bg-indigo-500/20 text-indigo-300 font-medium'
+                  : 'text-gray-400 hover:bg-white/5'
               }`}
             >
               전체 보기
@@ -132,11 +132,11 @@ export function DeepReportViewer({ projectId, reportId, meta, sections, mergedCo
             <MarkdownRenderer content={mergedContent} />
           ) : selectedSection ? (
             <div>
-              <h2 className="text-xl font-bold text-gray-900 mb-4">{selectedSection.title}</h2>
+              <h2 className="text-xl font-bold text-white mb-4">{selectedSection.title}</h2>
               <MarkdownRenderer content={selectedSection.content} />
             </div>
           ) : (
-            <div className="text-center py-12 text-gray-400">
+            <div className="text-center py-12 text-gray-500">
               섹션을 선택해주세요
             </div>
           )}
@@ -145,21 +145,21 @@ export function DeepReportViewer({ projectId, reportId, meta, sections, mergedCo
 
       {/* Footer navigation */}
       {!showAll && selectedSection && (
-        <div className="flex items-center justify-between px-6 py-3 border-t border-gray-200 bg-gray-50">
+        <div className="flex items-center justify-between px-6 py-3 border-t border-white/10 bg-white/[0.02]">
           <button
             onClick={handlePrev}
             disabled={currentIndex <= 0}
-            className="text-sm text-gray-600 hover:text-gray-900 disabled:text-gray-300 disabled:cursor-not-allowed transition-colors"
+            className="text-sm text-gray-400 hover:text-white disabled:text-gray-600 disabled:cursor-not-allowed transition-colors"
           >
             &larr; 이전 섹션
           </button>
-          <span className="text-xs text-gray-400">
+          <span className="text-xs text-gray-500">
             {currentIndex + 1} / {sections.length}
           </span>
           <button
             onClick={handleNext}
             disabled={currentIndex >= sections.length - 1}
-            className="text-sm text-gray-600 hover:text-gray-900 disabled:text-gray-300 disabled:cursor-not-allowed transition-colors"
+            className="text-sm text-gray-400 hover:text-white disabled:text-gray-600 disabled:cursor-not-allowed transition-colors"
           >
             다음 섹션 &rarr;
           </button>

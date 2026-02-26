@@ -17,7 +17,7 @@ export function ProjectTabs({ projectId }: ProjectTabsProps) {
   ]
 
   return (
-    <div className="border-b border-gray-200 mb-6">
+    <div className="border-b border-white/10 mb-6">
       <nav className="flex space-x-4">
         {tabs.map((tab) => {
           const isActive = pathname === tab.href
@@ -27,8 +27,8 @@ export function ProjectTabs({ projectId }: ProjectTabsProps) {
               href={tab.href}
               className={`px-3 py-2 text-sm font-medium border-b-2 transition-colors ${
                 isActive
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-indigo-500 text-indigo-400'
+                  : 'border-transparent text-gray-500 hover:text-gray-300 hover:border-gray-600'
               }`}
             >
               {tab.label}

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import type { ResearchProject } from '@/types'
 import { ChatInterface } from '@/components/projects/ChatInterface'
+import { PageSkeleton } from '@/components/ui/Skeleton'
 
 export default function ChatPage() {
   const params = useParams()
@@ -38,31 +39,31 @@ export default function ChatPage() {
   }, [id, router])
 
   if (isLoading) {
-    return (
-      <div className="text-center py-12 text-gray-500">
-        <p>프로젝트를 불러오는 중...</p>
-      </div>
-    )
+    return <PageSkeleton />
   }
 
   if (error || !project) {
     return (
-      <div className="text-center py-12 text-red-500">
-        <p>{error ?? 'Project not found'}</p>
-        <a href="/" className="text-blue-600 hover:underline text-sm mt-2 inline-block">
-          홈으로 돌아가기
-        </a>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center py-12 text-red-400">
+          <p>{error ?? 'Project not found'}</p>
+          <a href="/projects" className="text-indigo-400 hover:underline text-sm mt-2 inline-block">
+            워크스페이스로 돌아가기
+          </a>
+        </div>
       </div>
     )
   }
 
   return (
-    <ChatInterface
-      projectId={id}
-      projectName={project.name}
-      initialPrompt={project.prompt}
-      initialConversation={project.conversation}
-      onFinalized={() => router.push(`/projects/${id}`)}
-    />
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <ChatInterface
+        projectId={id}
+        projectName={project.name}
+        initialPrompt={project.prompt}
+        initialConversation={project.conversation}
+        onFinalized={() => router.push(`/projects/${id}`)}
+      />
+    </div>
   )
 }

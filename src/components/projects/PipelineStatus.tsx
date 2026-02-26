@@ -58,13 +58,13 @@ export function PipelineStatus({ projectId, status, onStatusChange }: PipelineSt
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="glass rounded-xl p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-gray-900">파이프라인</h3>
+        <h3 className="font-semibold text-white">파이프라인</h3>
         <button
           onClick={runPipeline}
           disabled={isRunning || isPipelineActive}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors"
+          className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-violet-500 text-white rounded-lg hover:from-indigo-600 hover:to-violet-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-all"
         >
           {isRunning || isPipelineActive ? '실행 중...' : '파이프라인 실행'}
         </button>
@@ -77,24 +77,24 @@ export function PipelineStatus({ projectId, status, onStatusChange }: PipelineSt
             <div key={step.key} className="flex items-center gap-2 flex-1">
               <div className={`flex items-center gap-2 flex-1 p-3 rounded-lg text-sm ${
                 stepStatus === 'done'
-                  ? 'bg-green-50 text-green-700'
+                  ? 'bg-green-500/10 text-green-400'
                   : stepStatus === 'active'
-                  ? 'bg-blue-50 text-blue-700'
-                  : 'bg-gray-50 text-gray-400'
+                  ? 'bg-blue-500/10 text-blue-400'
+                  : 'bg-white/5 text-gray-500'
               }`}>
                 <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
                   stepStatus === 'done'
                     ? 'bg-green-500 text-white'
                     : stepStatus === 'active'
                     ? 'bg-blue-500 text-white animate-pulse'
-                    : 'bg-gray-200 text-gray-500'
+                    : 'bg-white/10 text-gray-500'
                 }`}>
                   {stepStatus === 'done' ? '\u2713' : i + 1}
                 </span>
                 <span className="font-medium">{step.label}</span>
               </div>
               {i < PIPELINE_STEPS.length - 1 && (
-                <span className="text-gray-300">&rarr;</span>
+                <span className="text-gray-600">&rarr;</span>
               )}
             </div>
           )
@@ -102,7 +102,7 @@ export function PipelineStatus({ projectId, status, onStatusChange }: PipelineSt
       </div>
 
       {error && (
-        <p className="mt-3 text-sm text-red-600">{error}</p>
+        <p className="mt-3 text-sm text-red-400">{error}</p>
       )}
     </div>
   )

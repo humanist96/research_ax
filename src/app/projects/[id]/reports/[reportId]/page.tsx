@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation'
 import type { DeepReportMeta } from '@/lib/deep-research/types'
 import { ProjectTabs } from '@/components/projects/ProjectTabs'
 import { DeepReportViewer } from '@/components/reports/DeepReportViewer'
+import { PageSkeleton } from '@/components/ui/Skeleton'
 
 interface SectionData {
   readonly id: string
@@ -57,29 +58,27 @@ export default function DeepReportPage() {
   }, [projectId, reportId])
 
   if (isLoading) {
-    return (
-      <div className="text-center py-12 text-gray-500">
-        <p>보고서를 불러오는 중...</p>
-      </div>
-    )
+    return <PageSkeleton />
   }
 
   if (error || !meta) {
     return (
-      <div className="text-center py-12">
-        <p className="text-red-600">{error ?? '보고서를 찾을 수 없습니다'}</p>
-        <a href={`/projects/${projectId}/reports`} className="text-sm text-indigo-600 hover:underline mt-2 inline-block">
-          리포트 목록으로 돌아가기
-        </a>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center py-12">
+          <p className="text-red-400">{error ?? '보고서를 찾을 수 없습니다'}</p>
+          <a href={`/projects/${projectId}/reports`} className="text-sm text-indigo-400 hover:underline mt-2 inline-block">
+            리포트 목록으로 돌아가기
+          </a>
+        </div>
       </div>
     )
   }
 
   return (
-    <div>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex items-center justify-between mb-2">
-        <h1 className="text-2xl font-bold text-gray-900">{meta.title}</h1>
-        <a href={`/projects/${projectId}/reports`} className="text-sm text-gray-500 hover:text-gray-700">
+        <h1 className="text-2xl font-bold text-white">{meta.title}</h1>
+        <a href={`/projects/${projectId}/reports`} className="text-sm text-gray-500 hover:text-gray-300 transition-colors">
           &larr; 리포트 목록
         </a>
       </div>

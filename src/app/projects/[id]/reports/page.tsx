@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation'
 import type { ResearchProject, ReportMeta } from '@/types'
 import { ProjectTabs } from '@/components/projects/ProjectTabs'
 import { ReportList } from '@/components/reports/ReportList'
+import { PageSkeleton } from '@/components/ui/Skeleton'
 
 export default function ProjectReportsPage() {
   const params = useParams()
@@ -40,11 +41,7 @@ export default function ProjectReportsPage() {
   }, [id])
 
   if (isLoading) {
-    return (
-      <div className="text-center py-12 text-gray-500">
-        <p>로딩 중...</p>
-      </div>
-    )
+    return <PageSkeleton />
   }
 
   const categoryLabels: Record<string, string> = {}
@@ -55,16 +52,16 @@ export default function ProjectReportsPage() {
   }
 
   return (
-    <div>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex items-center justify-between mb-2">
-        <h1 className="text-2xl font-bold text-gray-900">{project?.name ?? '리포트'}</h1>
-        <a href="/" className="text-sm text-gray-500 hover:text-gray-700">&larr; 홈으로</a>
+        <h1 className="text-2xl font-bold text-white">{project?.name ?? '리포트'}</h1>
+        <a href="/projects" className="text-sm text-gray-500 hover:text-gray-300 transition-colors">&larr; 워크스페이스</a>
       </div>
 
       <ProjectTabs projectId={id} />
 
       <div className="mb-6">
-        <p className="text-gray-500 text-sm">생성된 리포트 목록</p>
+        <p className="text-gray-400 text-sm">생성된 리포트 목록</p>
       </div>
 
       <ReportList projectId={id} reports={reports} reportContents={reportContents} categoryLabels={categoryLabels} />

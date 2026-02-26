@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import type { ProjectStatus } from '@/types'
-import type { ReportOutline, DeepResearchEvent } from '@/lib/deep-research/types'
+import type { DeepResearchEvent } from '@/lib/deep-research/types'
 
 interface DeepResearchPanelProps {
   readonly projectId: string
@@ -60,11 +60,11 @@ function getSectionStatusLabel(status: SectionState['status']): string {
 
 function getSectionStatusColor(status: SectionState['status']): string {
   const colors: Record<SectionState['status'], string> = {
-    pending: 'text-gray-400',
-    searching: 'text-blue-600',
-    analyzing: 'text-amber-600',
-    complete: 'text-green-600',
-    error: 'text-red-600',
+    pending: 'text-gray-500',
+    searching: 'text-blue-400',
+    analyzing: 'text-amber-400',
+    complete: 'text-green-400',
+    error: 'text-red-400',
   }
   return colors[status]
 }
@@ -161,18 +161,18 @@ export function DeepResearchPanel({ projectId, status, onStatusChange }: DeepRes
   const completedSections = sections.filter((s) => s.status === 'complete').length
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="glass rounded-xl p-6">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="font-semibold text-gray-900">딥 리서치</h3>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <h3 className="font-semibold text-white">딥 리서치</h3>
+          <p className="text-sm text-gray-400 mt-0.5">
             AI가 주제를 심층 분석하여 종합 보고서를 생성합니다
           </p>
         </div>
         <button
           onClick={startResearch}
           disabled={isDisabled}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors"
+          className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-violet-500 text-white rounded-lg hover:from-indigo-600 hover:to-violet-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-all"
         >
           {isRunning ? '리서치 중...' : '딥 리서치 실행'}
         </button>
@@ -180,7 +180,6 @@ export function DeepResearchPanel({ projectId, status, onStatusChange }: DeepRes
 
       {phase !== 'idle' && (
         <>
-          {/* 3-step progress bar */}
           <div className="flex items-center gap-2 mb-4">
             {PHASE_STEPS.map((step, i) => {
               const stepStatus = getStepStatus(i, currentPhaseIdx, phase)
@@ -188,36 +187,35 @@ export function DeepResearchPanel({ projectId, status, onStatusChange }: DeepRes
                 <div key={step.key} className="flex items-center gap-2 flex-1">
                   <div className={`flex items-center gap-2 flex-1 p-3 rounded-lg text-sm ${
                     stepStatus === 'done'
-                      ? 'bg-green-50 text-green-700'
+                      ? 'bg-green-500/10 text-green-400'
                       : stepStatus === 'active'
-                      ? 'bg-indigo-50 text-indigo-700'
-                      : 'bg-gray-50 text-gray-400'
+                      ? 'bg-indigo-500/10 text-indigo-400'
+                      : 'bg-white/5 text-gray-500'
                   }`}>
                     <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
                       stepStatus === 'done'
                         ? 'bg-green-500 text-white'
                         : stepStatus === 'active'
                         ? 'bg-indigo-500 text-white animate-pulse'
-                        : 'bg-gray-200 text-gray-500'
+                        : 'bg-white/10 text-gray-500'
                     }`}>
                       {stepStatus === 'done' ? '\u2713' : i + 1}
                     </span>
                     <span className="font-medium">{step.label}</span>
                   </div>
                   {i < PHASE_STEPS.length - 1 && (
-                    <span className="text-gray-300">&rarr;</span>
+                    <span className="text-gray-600">&rarr;</span>
                   )}
                 </div>
               )
             })}
           </div>
 
-          {/* Section status list */}
           {sections.length > 0 && (
-            <div className="border rounded-lg divide-y">
+            <div className="border border-white/10 rounded-lg divide-y divide-white/10">
               {sections.map((section) => (
                 <div key={section.id} className="flex items-center justify-between px-4 py-3 text-sm">
-                  <span className="text-gray-800 font-medium">{section.title}</span>
+                  <span className="text-gray-200 font-medium">{section.title}</span>
                   <div className="flex items-center gap-3">
                     <span className={`font-medium ${getSectionStatusColor(section.status)}`}>
                       {section.status === 'searching' || section.status === 'analyzing' ? (
@@ -230,7 +228,7 @@ export function DeepResearchPanel({ projectId, status, onStatusChange }: DeepRes
                       )}
                     </span>
                     {section.sourcesFound !== undefined && section.sourcesFound > 0 && (
-                      <span className="text-gray-400 text-xs">{section.sourcesFound}건</span>
+                      <span className="text-gray-500 text-xs">{section.sourcesFound}건</span>
                     )}
                   </div>
                 </div>
@@ -238,16 +236,14 @@ export function DeepResearchPanel({ projectId, status, onStatusChange }: DeepRes
             </div>
           )}
 
-          {/* Summary */}
           {sections.length > 0 && (
             <p className="mt-3 text-sm text-gray-500">
               {completedSections}/{sections.length} 섹션 완료
             </p>
           )}
 
-          {/* Complete message */}
           {phase === 'complete' && reportId && (
-            <div className="mt-4 p-3 bg-green-50 rounded-lg text-sm text-green-700 flex items-center justify-between">
+            <div className="mt-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg text-sm text-green-400 flex items-center justify-between">
               <span>딥 리서치가 완료되었습니다.</span>
               <a
                 href={`/projects/${projectId}/reports/${reportId}`}
@@ -258,9 +254,8 @@ export function DeepResearchPanel({ projectId, status, onStatusChange }: DeepRes
             </div>
           )}
 
-          {/* Error */}
           {error && (
-            <p className="mt-3 text-sm text-red-600">{error}</p>
+            <p className="mt-3 text-sm text-red-400">{error}</p>
           )}
         </>
       )}

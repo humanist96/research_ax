@@ -10,6 +10,7 @@ import { StatsCards } from '@/components/dashboard/StatsCards'
 import { RecentNews } from '@/components/dashboard/RecentNews'
 import { CategoryChart } from '@/components/dashboard/CategoryChart'
 import { DeepResearchPanel } from '@/components/projects/DeepResearchPanel'
+import { PageSkeleton } from '@/components/ui/Skeleton'
 
 export default function ProjectDashboardPage() {
   const params = useParams()
@@ -55,20 +56,18 @@ export default function ProjectDashboardPage() {
   }, [id, router])
 
   if (isLoading) {
-    return (
-      <div className="text-center py-12 text-gray-500">
-        <p>프로젝트를 불러오는 중...</p>
-      </div>
-    )
+    return <PageSkeleton />
   }
 
   if (error || !project) {
     return (
-      <div className="text-center py-12 text-red-500">
-        <p>{error ?? 'Project not found'}</p>
-        <a href="/" className="text-blue-600 hover:underline text-sm mt-2 inline-block">
-          홈으로 돌아가기
-        </a>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center py-12 text-red-400">
+          <p>{error ?? 'Project not found'}</p>
+          <a href="/projects" className="text-indigo-400 hover:underline text-sm mt-2 inline-block">
+            워크스페이스로 돌아가기
+          </a>
+        </div>
       </div>
     )
   }
@@ -81,17 +80,17 @@ export default function ProjectDashboardPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{project.name}</h1>
-          <p className="text-gray-500 mt-1 text-sm">{project.prompt}</p>
+          <h1 className="text-2xl font-bold text-white">{project.name}</h1>
+          <p className="text-gray-400 mt-1 text-sm">{project.prompt}</p>
         </div>
         <a
-          href="/"
-          className="text-sm text-gray-500 hover:text-gray-700"
+          href="/projects"
+          className="text-sm text-gray-500 hover:text-gray-300 transition-colors"
         >
-          &larr; 홈으로
+          &larr; 워크스페이스
         </a>
       </div>
 

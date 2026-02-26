@@ -40,24 +40,24 @@ export function SuggestionBubbles({ suggestions, onSend, disabled }: SuggestionB
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <span className="inline-block w-2 h-2 rounded-full bg-purple-500" />
-          <span className="text-sm font-medium text-purple-800">
+          <span className="text-sm font-medium text-purple-300">
             &ldquo;{selected.label}&rdquo; 시나리오
           </span>
-          <span className="text-xs text-gray-400">수정 가능</span>
+          <span className="text-xs text-gray-500">수정 가능</span>
         </div>
         <textarea
           value={editedPrompt}
           onChange={(e) => setEditedPrompt(e.target.value)}
           disabled={disabled}
           rows={6}
-          className="w-full px-3 py-2.5 text-sm border border-purple-200 rounded-lg bg-purple-50/30 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 resize-y disabled:opacity-50"
+          className="w-full px-3 py-2.5 text-sm bg-purple-500/10 border border-purple-500/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 resize-y disabled:opacity-50 text-gray-200"
         />
         <div className="flex justify-end gap-2">
           <button
             type="button"
             onClick={handleCancel}
             disabled={disabled}
-            className="px-4 py-1.5 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors"
+            className="px-4 py-1.5 text-sm text-gray-400 border border-white/10 rounded-lg hover:bg-white/5 disabled:opacity-50 transition-colors"
           >
             취소
           </button>
@@ -76,7 +76,7 @@ export function SuggestionBubbles({ suggestions, onSend, disabled }: SuggestionB
 
   return (
     <div className="space-y-2">
-      <p className="text-xs font-medium text-purple-600">
+      <p className="text-xs font-medium text-purple-400">
         빠른 답변 시나리오
       </p>
       <div className="flex flex-wrap gap-2">
@@ -86,7 +86,7 @@ export function SuggestionBubbles({ suggestions, onSend, disabled }: SuggestionB
             type="button"
             onClick={() => handleBubbleClick(index)}
             disabled={disabled}
-            className="px-3.5 py-1.5 text-sm border border-purple-300 text-purple-700 bg-purple-50 rounded-full hover:bg-purple-100 hover:border-purple-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-3.5 py-1.5 text-sm border border-purple-500/30 text-purple-300 bg-purple-500/10 rounded-full hover:bg-purple-500/20 hover:border-purple-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {suggestion.label}
           </button>

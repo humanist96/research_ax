@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import type { ResearchProject } from '@/types'
 import { ProjectCard } from './ProjectCard'
+import { CardSkeleton } from '@/components/ui/Skeleton'
 
 export function ProjectList() {
   const [projects, setProjects] = useState<ResearchProject[]>([])
@@ -31,15 +32,17 @@ export function ProjectList() {
 
   if (isLoading) {
     return (
-      <div className="text-center py-12 text-gray-500">
-        <p>프로젝트 목록을 불러오는 중...</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <CardSkeleton />
+        <CardSkeleton />
+        <CardSkeleton />
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="text-center py-12 text-red-500">
+      <div className="text-center py-12 text-red-400">
         <p>{error}</p>
       </div>
     )

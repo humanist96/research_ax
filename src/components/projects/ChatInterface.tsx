@@ -86,7 +86,6 @@ export function ChatInterface({
             } else if (event.type === 'structured') {
               setStreamingText('')
               const structured = event.structured as StructuredData
-              // Store message as conversation turn (display summary, not raw JSON)
               setConversation((prev) => [
                 ...prev,
                 {
@@ -95,7 +94,6 @@ export function ChatInterface({
                   timestamp: new Date().toISOString(),
                 },
               ])
-              // Show form if there are questions and not done
               if (!structured.done && structured.questions.length > 0) {
                 setPendingStructured(structured)
               }
@@ -181,15 +179,15 @@ export function ChatInterface({
 
   return (
     <div className="flex flex-col h-[calc(100vh-16rem)]">
-      <div className="bg-white rounded-t-lg shadow p-4 border-b">
-        <h2 className="font-semibold text-gray-900">{projectName}</h2>
-        <p className="text-sm text-gray-500 mt-1">
+      <div className="glass rounded-t-xl p-4 border-b border-white/10">
+        <h2 className="font-semibold text-white">{projectName}</h2>
+        <p className="text-sm text-gray-400 mt-1">
           대화를 통해 리서치 범위를 설정합니다. 충분히 구체화되면 &quot;설정 완료&quot;를 누르세요.
         </p>
       </div>
 
-      <div className="flex-1 overflow-y-auto bg-gray-50 p-4 space-y-4">
-        <div className="bg-blue-50 rounded-lg p-3 text-sm text-blue-800">
+      <div className="flex-1 overflow-y-auto bg-slate-900/50 p-4 space-y-4">
+        <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-lg p-3 text-sm text-indigo-300">
           <span className="font-medium">리서치 주제:</span> {initialPrompt}
         </div>
 
@@ -201,8 +199,8 @@ export function ChatInterface({
             <div
               className={`max-w-[80%] rounded-lg p-3 text-sm whitespace-pre-wrap ${
                 turn.role === 'user'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white shadow text-gray-800'
+                  ? 'bg-indigo-600 text-white'
+                  : 'glass text-gray-200'
               }`}
             >
               {turn.content}
@@ -212,20 +210,20 @@ export function ChatInterface({
 
         {streamingText && (
           <div className="flex justify-start">
-            <div className="max-w-[80%] bg-white shadow rounded-lg p-3 text-sm text-gray-800 whitespace-pre-wrap">
+            <div className="max-w-[80%] glass rounded-lg p-3 text-sm text-gray-200 whitespace-pre-wrap">
               {streamingText}
-              <span className="inline-block w-1.5 h-4 bg-blue-500 ml-0.5 animate-pulse align-text-bottom" />
+              <span className="inline-block w-1.5 h-4 bg-indigo-500 ml-0.5 animate-pulse align-text-bottom" />
             </div>
           </div>
         )}
 
         {isLoading && !streamingText && (
           <div className="flex justify-start">
-            <div className="bg-white shadow rounded-lg p-3 text-sm text-gray-500">
+            <div className="glass rounded-lg p-3 text-sm text-gray-400">
               <span className="inline-flex items-center gap-1">
-                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                <span className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                <span className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                <span className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
               </span>
             </div>
           </div>
@@ -235,7 +233,7 @@ export function ChatInterface({
           <div className="flex justify-start">
             <div className="max-w-[90%] space-y-3">
               {pendingStructured.suggestions && pendingStructured.suggestions.length > 0 && (
-                <div className="bg-white shadow rounded-lg p-4">
+                <div className="glass rounded-lg p-4">
                   <SuggestionBubbles
                     suggestions={pendingStructured.suggestions}
                     onSend={handleStructuredSubmit}
@@ -243,7 +241,7 @@ export function ChatInterface({
                   />
                 </div>
               )}
-              <div className="bg-white shadow rounded-lg p-4">
+              <div className="glass rounded-lg p-4">
                 <StructuredForm
                   data={pendingStructured}
                   onSubmit={handleStructuredSubmit}
@@ -258,15 +256,15 @@ export function ChatInterface({
       </div>
 
       {error && (
-        <div className="bg-red-50 p-3 text-sm text-red-600">
+        <div className="bg-red-500/10 border-t border-red-500/20 p-3 text-sm text-red-400">
           {error}
         </div>
       )}
 
-      <div className="bg-white rounded-b-lg shadow p-4 border-t">
+      <div className="glass rounded-b-xl p-4 border-t border-white/10">
         {pendingStructured ? (
           <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-400">
               {pendingStructured.suggestions && pendingStructured.suggestions.length > 0
                 ? '빠른 시나리오를 선택하거나 아래 폼에서 직접 답변해주세요'
                 : '위 폼에서 답변을 선택해주세요'}
@@ -287,13 +285,13 @@ export function ChatInterface({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="답변을 입력하세요..."
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              className="flex-1 px-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm text-white placeholder-gray-500"
               disabled={isLoading || isFinalizing}
             />
             <button
               type="submit"
               disabled={!input.trim() || isLoading || isFinalizing}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors"
+              className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-violet-500 text-white rounded-lg hover:from-indigo-600 hover:to-violet-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-all"
             >
               전송
             </button>

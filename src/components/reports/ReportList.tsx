@@ -31,17 +31,17 @@ export function ReportList({ projectId, reports, reportContents, categoryLabels 
         const content = reportContents[report.id]
 
         return (
-          <div key={report.id} className="bg-white rounded-lg shadow overflow-hidden">
+          <div key={report.id} className="glass rounded-xl overflow-hidden">
             {isDeepResearch ? (
               <a
                 href={`/projects/${projectId}/reports/${report.id}`}
-                className="block w-full text-left p-6 hover:bg-gray-50 transition-colors"
+                className="block w-full text-left p-6 hover:bg-white/5 transition-colors"
               >
                 <div className="flex items-start justify-between">
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-gray-900">{report.title}</h3>
-                      <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-medium">
+                      <h3 className="font-semibold text-white">{report.title}</h3>
+                      <span className="text-xs bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full font-medium">
                         딥 리서치
                       </span>
                     </div>
@@ -51,10 +51,10 @@ export function ReportList({ projectId, reports, reportContents, categoryLabels 
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="text-right">
-                      <div className="text-2xl font-bold text-indigo-600">{report.totalArticles}</div>
-                      <div className="text-xs text-gray-400">소스</div>
+                      <div className="text-2xl font-bold text-indigo-400">{report.totalArticles}</div>
+                      <div className="text-xs text-gray-500">소스</div>
                     </div>
-                    <span className="text-gray-400 text-xl">&rarr;</span>
+                    <span className="text-gray-500 text-xl">&rarr;</span>
                   </div>
                 </div>
                 {report.sectionLabels && (
@@ -62,7 +62,7 @@ export function ReportList({ projectId, reports, reportContents, categoryLabels 
                     {Object.entries(report.sectionLabels).map(([id, label]) => (
                       <span
                         key={id}
-                        className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded"
+                        className="text-xs bg-white/5 text-gray-400 px-2 py-1 rounded"
                       >
                         {label}
                       </span>
@@ -74,21 +74,21 @@ export function ReportList({ projectId, reports, reportContents, categoryLabels 
               <>
                 <button
                   onClick={() => setExpandedId(isExpanded ? null : report.id)}
-                  className="w-full text-left p-6 hover:bg-gray-50 transition-colors"
+                  className="w-full text-left p-6 hover:bg-white/5 transition-colors"
                 >
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="font-semibold text-gray-900">{report.title}</h3>
+                      <h3 className="font-semibold text-white">{report.title}</h3>
                       <p className="text-sm text-gray-500 mt-1">
                         {report.startDate} ~ {report.endDate}
                       </p>
                     </div>
                     <div className="flex items-center gap-4">
                       <div className="text-right">
-                        <div className="text-2xl font-bold text-blue-600">{report.totalArticles}</div>
-                        <div className="text-xs text-gray-400">기사</div>
+                        <div className="text-2xl font-bold text-blue-400">{report.totalArticles}</div>
+                        <div className="text-xs text-gray-500">기사</div>
                       </div>
-                      <span className="text-gray-400 text-xl">
+                      <span className="text-gray-500 text-xl">
                         {isExpanded ? '\u25B2' : '\u25BC'}
                       </span>
                     </div>
@@ -99,7 +99,7 @@ export function ReportList({ projectId, reports, reportContents, categoryLabels 
                       .map(([cat, count]) => (
                         <span
                           key={cat}
-                          className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded"
+                          className="text-xs bg-white/5 text-gray-400 px-2 py-1 rounded"
                         >
                           {categoryLabels[cat] ?? cat} ({count})
                         </span>
@@ -108,7 +108,7 @@ export function ReportList({ projectId, reports, reportContents, categoryLabels 
                 </button>
 
                 {isExpanded && content && (
-                  <div className="border-t border-gray-200 p-6">
+                  <div className="border-t border-white/10 p-6">
                     <MarkdownRenderer content={content} />
                   </div>
                 )}

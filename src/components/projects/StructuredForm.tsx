@@ -13,8 +13,8 @@ export interface StructuredQuestion {
 }
 
 export interface Suggestion {
-  readonly label: string   // 버블에 표시 (10자 이내)
-  readonly prompt: string  // 보완된 상세 프롬프트
+  readonly label: string
+  readonly prompt: string
 }
 
 export interface StructuredData {
@@ -124,22 +124,22 @@ export function StructuredForm({ data, onSubmit, disabled }: StructuredFormProps
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-gray-800">{data.message}</p>
+      <p className="text-sm text-gray-200">{data.message}</p>
 
       {hasAnyRecommendation && (
         <button
           type="button"
           onClick={handleApplyAll}
           disabled={disabled}
-          className="w-full py-2 bg-amber-50 text-amber-700 border border-amber-300 rounded-lg hover:bg-amber-100 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors"
+          className="w-full py-2 bg-amber-500/10 text-amber-300 border border-amber-500/30 rounded-lg hover:bg-amber-500/20 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors"
         >
           AI 추천으로 채우기
         </button>
       )}
 
       {data.questions.map((q) => (
-        <div key={q.id} className="border border-gray-200 rounded-lg p-3 space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
+        <div key={q.id} className="border border-white/10 rounded-lg p-3 space-y-2">
+          <label className="block text-sm font-medium text-gray-300">
             {q.label}
           </label>
 
@@ -156,15 +156,15 @@ export function StructuredForm({ data, onSubmit, disabled }: StructuredFormProps
                     disabled={disabled}
                     className={`relative px-3 py-1.5 rounded-full text-sm border transition-colors ${
                       selected
-                        ? 'bg-blue-600 text-white border-blue-600'
+                        ? 'bg-indigo-600 text-white border-indigo-600'
                         : recommended
-                          ? 'bg-white text-gray-700 border-amber-400 ring-1 ring-amber-300'
-                          : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'
+                          ? 'bg-white/5 text-gray-300 border-amber-500/50 ring-1 ring-amber-500/30'
+                          : 'bg-white/5 text-gray-300 border-white/10 hover:border-indigo-500/50'
                     } disabled:opacity-50`}
                   >
                     {opt}
                     {recommended && !selected && (
-                      <span className="ml-1 text-[10px] text-amber-600 font-medium">추천</span>
+                      <span className="ml-1 text-[10px] text-amber-400 font-medium">추천</span>
                     )}
                   </button>
                 )
@@ -186,15 +186,15 @@ export function StructuredForm({ data, onSubmit, disabled }: StructuredFormProps
                       disabled={disabled}
                       className={`relative px-3 py-1.5 rounded-full text-sm border transition-colors ${
                         selected
-                          ? 'bg-blue-600 text-white border-blue-600'
+                          ? 'bg-indigo-600 text-white border-indigo-600'
                           : recommended
-                            ? 'bg-white text-gray-700 border-amber-400 ring-1 ring-amber-300'
-                            : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'
+                            ? 'bg-white/5 text-gray-300 border-amber-500/50 ring-1 ring-amber-500/30'
+                            : 'bg-white/5 text-gray-300 border-white/10 hover:border-indigo-500/50'
                       } disabled:opacity-50`}
                     >
                       {selected ? '✓ ' : ''}{opt}
                       {recommended && !selected && (
-                        <span className="ml-1 text-[10px] text-amber-600 font-medium">추천</span>
+                        <span className="ml-1 text-[10px] text-amber-400 font-medium">추천</span>
                       )}
                     </button>
                   )
@@ -207,7 +207,7 @@ export function StructuredForm({ data, onSubmit, disabled }: StructuredFormProps
                   onChange={(e) => handleCustomInputChange(q.id, e.target.value)}
                   placeholder="직접 입력..."
                   disabled={disabled}
-                  className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-1.5 text-sm bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white placeholder-gray-500"
                 />
               )}
             </div>
@@ -223,13 +223,13 @@ export function StructuredForm({ data, onSubmit, disabled }: StructuredFormProps
                   typeof q.recommended === 'string' ? `추천: ${q.recommended}` : '입력하세요...'
                 }
                 disabled={disabled}
-                className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-1.5 text-sm bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white placeholder-gray-500"
               />
             </div>
           )}
 
           {q.reason && (
-            <p className="text-xs text-amber-600/80 mt-1">
+            <p className="text-xs text-amber-400/80 mt-1">
               {q.reason}
             </p>
           )}
@@ -240,7 +240,7 @@ export function StructuredForm({ data, onSubmit, disabled }: StructuredFormProps
         type="button"
         onClick={handleSubmit}
         disabled={disabled || !isComplete}
-        className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors"
+        className="w-full py-2 bg-gradient-to-r from-indigo-500 to-violet-500 text-white rounded-lg hover:from-indigo-600 hover:to-violet-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-all"
       >
         답변 제출
       </button>
