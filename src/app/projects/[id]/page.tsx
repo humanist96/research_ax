@@ -122,6 +122,15 @@ export default function ProjectDashboardPage() {
         </>
       )}
 
+      {project.config && (
+        <ConfigPreview
+          config={project.config}
+          conversation={project.conversation}
+          initialPrompt={project.prompt}
+          defaultExpanded={articles.length === 0}
+        />
+      )}
+
       {articles.length > 0 && (
         <>
           <StatsCards articles={articles} categoryLabels={categoryLabels} />
@@ -130,10 +139,6 @@ export default function ProjectDashboardPage() {
             <CategoryChart articles={articles} categoryLabels={categoryLabels} />
           </div>
         </>
-      )}
-
-      {project.config && articles.length === 0 && (
-        <ConfigPreview config={project.config} />
       )}
     </div>
   )
