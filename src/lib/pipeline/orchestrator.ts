@@ -14,6 +14,7 @@ import {
   saveProjectArticles,
   getProjectAnalyzedArticles,
   saveProjectAnalyzedArticles,
+  getExcludedArticleIds,
   getProjectReportIndex,
   saveProjectReportIndex,
   saveProjectReport,
@@ -135,7 +136,8 @@ async function analyzePhase(
   emit({ type: 'phase', phase: 'analyzing', message: 'AI가 기사를 분석하고 있습니다...' })
   setProjectStatus(projectId, 'analyzing')
 
-  const articles = getProjectArticles(projectId)
+  const excludedIds = new Set(getExcludedArticleIds(projectId))
+  const articles = getProjectArticles(projectId).filter((a) => !excludedIds.has(a.id))
   const existingAnalyzed = getProjectAnalyzedArticles(projectId)
   const analyzedIds = new Set(existingAnalyzed.map((a) => a.id))
   const unanalyzed = articles.filter((a) => !analyzedIds.has(a.id))
@@ -208,7 +210,8 @@ function reportPhase(
   emit({ type: 'phase', phase: 'reporting', message: '리포트를 생성하고 있습니다...' })
   setProjectStatus(projectId, 'reporting')
 
-  const allArticles = getProjectAnalyzedArticles(projectId)
+  const excludedIds = new Set(getExcludedArticleIds(projectId))
+  const allArticles = getProjectAnalyzedArticles(projectId).filter((a) => !excludedIds.has(a.id))
   const { startDate, endDate } = getDateRange()
   const articles = filterByDateRange(allArticles, startDate, endDate)
 

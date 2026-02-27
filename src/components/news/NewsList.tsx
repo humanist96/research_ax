@@ -1,12 +1,21 @@
-import type { AnalyzedArticle } from '@/types'
+import type { AnalyzedArticle, Article } from '@/types'
 import { NewsCard } from './NewsCard'
 
 interface NewsListProps {
-  readonly articles: readonly AnalyzedArticle[]
+  readonly articles: readonly (AnalyzedArticle | Article)[]
   readonly categoryLabels?: Record<string, string>
+  readonly isReviewMode?: boolean
+  readonly excludedIds?: ReadonlySet<string>
+  readonly onToggleExclusion?: (articleId: string) => void
 }
 
-export function NewsList({ articles, categoryLabels }: NewsListProps) {
+export function NewsList({
+  articles,
+  categoryLabels,
+  isReviewMode = false,
+  excludedIds,
+  onToggleExclusion,
+}: NewsListProps) {
   if (articles.length === 0) {
     return (
       <div className="text-center py-12 text-gray-500">
@@ -19,7 +28,14 @@ export function NewsList({ articles, categoryLabels }: NewsListProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {articles.map((article) => (
-        <NewsCard key={article.id} article={article} categoryLabels={categoryLabels} />
+        <NewsCard
+          key={article.id}
+          article={article}
+          categoryLabels={categoryLabels}
+          isExcluded={excludedIds?.has(article.id) ?? false}
+          isReviewMode={isReviewMode}
+          onToggleExclusion={onToggleExclusion}
+        />
       ))}
     </div>
   )

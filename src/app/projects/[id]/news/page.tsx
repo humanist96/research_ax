@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
-import type { ResearchProject, AnalyzedArticle } from '@/types'
+import type { ResearchProject, AnalyzedArticle, Article } from '@/types'
 import { ProjectTabs } from '@/components/projects/ProjectTabs'
 import { NewsFilter } from '@/components/news/NewsFilter'
 import { PageSkeleton } from '@/components/ui/Skeleton'
@@ -12,21 +12,41 @@ export default function ProjectNewsPage() {
   const id = params.id as string
 
   const [project, setProject] = useState<ResearchProject | null>(null)
-  const [articles, setArticles] = useState<AnalyzedArticle[]>([])
+  const [articles, setArticles] = useState<(AnalyzedArticle | Article)[]>([])
+  const [excludedIds, setExcludedIds] = useState<Set<string>>(new Set())
+  const [isReviewMode, setIsReviewMode] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     async function load() {
       try {
-        const [projRes, artRes] = await Promise.all([
+        const [projRes, analyzedRes, rawRes, excludedRes] = await Promise.all([
           fetch(`/api/projects/${id}`),
           fetch(`/api/projects/${id}/articles`),
+          fetch(`/api/projects/${id}/articles?type=raw`),
+          fetch(`/api/projects/${id}/articles/excluded`),
         ])
         const projData = await projRes.json()
-        const artData = await artRes.json()
+        const analyzedData = await analyzedRes.json()
+        const rawData = await rawRes.json()
+        const excludedData = await excludedRes.json()
 
         if (projData.success) setProject(projData.data)
-        if (artData.success) setArticles(artData.data)
+
+        const analyzedArticles: AnalyzedArticle[] = analyzedData.success ? analyzedData.data : []
+        const rawArticles: Article[] = rawData.success ? rawData.data : []
+
+        if (analyzedArticles.length > 0) {
+          const analyzedIdSet = new Set(analyzedArticles.map((a: AnalyzedArticle) => a.id))
+          const unanalyzedRaw = rawArticles.filter((a: Article) => !analyzedIdSet.has(a.id))
+          setArticles([...analyzedArticles, ...unanalyzedRaw])
+        } else {
+          setArticles(rawArticles)
+        }
+
+        if (excludedData.success) {
+          setExcludedIds(new Set(excludedData.data))
+        }
       } catch {
         // handled by empty state
       } finally {
@@ -35,6 +55,32 @@ export default function ProjectNewsPage() {
     }
     load()
   }, [id])
+
+  const handleToggleExclusion = useCallback(async (articleId: string) => {
+    const prev = excludedIds
+    const next = new Set(prev)
+    if (next.has(articleId)) {
+      next.delete(articleId)
+    } else {
+      next.add(articleId)
+    }
+
+    setExcludedIds(next)
+
+    try {
+      const res = await fetch(`/api/projects/${id}/articles/excluded`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: [...next] }),
+      })
+      const data = await res.json()
+      if (!data.success) {
+        setExcludedIds(prev)
+      }
+    } catch {
+      setExcludedIds(prev)
+    }
+  }, [id, excludedIds])
 
   if (isLoading) {
     return <PageSkeleton />
@@ -60,7 +106,14 @@ export default function ProjectNewsPage() {
         <p className="text-gray-400 text-sm">수집된 뉴스 목록</p>
       </div>
 
-      <NewsFilter articles={articles} categoryLabels={categoryLabels} />
+      <NewsFilter
+        articles={articles}
+        categoryLabels={categoryLabels}
+        isReviewMode={isReviewMode}
+        excludedIds={excludedIds}
+        onToggleReviewMode={() => setIsReviewMode((v) => !v)}
+        onToggleExclusion={handleToggleExclusion}
+      />
     </div>
   )
 }

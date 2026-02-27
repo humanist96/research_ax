@@ -7,6 +7,7 @@ import {
   getProject,
   getProjectArticles,
   getProjectAnalyzedArticles,
+  getExcludedArticleIds,
   saveProjectAnalyzedArticles,
 } from '../src/lib/project/store'
 import type { Article, AnalyzedArticle } from '../src/types'
@@ -84,7 +85,8 @@ async function analyzeForProject(projectId: string) {
   const config = project.config
   console.log(`[Analyze] Starting analysis for project: ${project.name}`)
 
-  const articles = getProjectArticles(projectId)
+  const excludedIds = new Set(getExcludedArticleIds(projectId))
+  const articles = getProjectArticles(projectId).filter((a) => !excludedIds.has(a.id))
   const existingAnalyzed = getProjectAnalyzedArticles(projectId)
   const analyzedIds = new Set(existingAnalyzed.map((a) => a.id))
 

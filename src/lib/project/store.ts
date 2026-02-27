@@ -118,6 +118,14 @@ export function deleteProject(id: string): boolean {
   return true
 }
 
+export function getExcludedArticleIds(id: string): string[] {
+  return readJsonSafe(path.join(projectDir(id), 'excluded-article-ids.json'), [])
+}
+
+export function saveExcludedArticleIds(id: string, ids: readonly string[]): void {
+  writeJson(path.join(projectDir(id), 'excluded-article-ids.json'), ids)
+}
+
 export function getProjectArticles(id: string): Article[] {
   return readJsonSafe(path.join(projectDir(id), 'articles.json'), [])
 }
