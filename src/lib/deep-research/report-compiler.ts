@@ -1,5 +1,5 @@
 import type { ProjectConfig, ReportMeta } from '@/types'
-import type { ReportOutline, SectionResearchResult, SourceReference, DeepReportMeta, DeepReportSectionMeta } from './types'
+import type { ReportOutline, SectionResearchResult, SourceReference, DeepReportMeta, DeepReportSectionMeta, DeepReportSectionStatus, DeepReportPhase } from './types'
 import { callClaudeAsync } from './claude-async'
 import {
   getDeepReportSection,
@@ -179,7 +179,8 @@ export function buildDeepReportMetaFull(
   reportId: string,
   outline: ReportOutline,
   sectionResults: readonly SectionResearchResult[],
-  sectionStatuses: ReadonlyMap<string, 'complete' | 'error'>,
+  sectionStatuses: ReadonlyMap<string, DeepReportSectionStatus>,
+  phase?: DeepReportPhase,
 ): DeepReportMeta {
   const now = new Date().toISOString()
   const totalSources = sectionResults.reduce((sum, s) => sum + s.sources.length, 0)
@@ -191,19 +192,19 @@ export function buildDeepReportMetaFull(
       id: 'executive-summary',
       title: '핵심 요약',
       sourcesCount: 0,
-      status: sectionStatuses.get('executive-summary') ?? 'complete',
+      status: sectionStatuses.get('executive-summary') ?? 'pending',
     },
     ...outline.sections.map((s) => ({
       id: s.id,
       title: s.title,
       sourcesCount: resultMap.get(s.id)?.sources.length ?? 0,
-      status: sectionStatuses.get(s.id) ?? 'error' as const,
+      status: sectionStatuses.get(s.id) ?? 'pending' as const,
     })),
     {
       id: 'conclusion',
       title: '결론 및 전망',
       sourcesCount: 0,
-      status: sectionStatuses.get('conclusion') ?? 'complete',
+      status: sectionStatuses.get('conclusion') ?? 'pending',
     },
   ]
 
@@ -214,5 +215,6 @@ export function buildDeepReportMetaFull(
     generatedAt: now,
     totalSources,
     sections,
+    ...(phase !== undefined ? { phase } : {}),
   }
 }

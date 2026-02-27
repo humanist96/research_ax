@@ -33,13 +33,18 @@ export interface DeepReportMeta {
   readonly generatedAt: string
   readonly totalSources: number
   readonly sections: readonly DeepReportSectionMeta[]
+  readonly phase?: DeepReportPhase
 }
+
+export type DeepReportSectionStatus = 'pending' | 'searching' | 'analyzing' | 'deepening' | 'refining' | 'complete' | 'error'
+
+export type DeepReportPhase = 'outline' | 'researching' | 'compiling' | 'pdf' | 'complete' | 'error'
 
 export interface DeepReportSectionMeta {
   readonly id: string
   readonly title: string
   readonly sourcesCount: number
-  readonly status: 'complete' | 'error'
+  readonly status: DeepReportSectionStatus
 }
 
 export type DeepResearchEvent =

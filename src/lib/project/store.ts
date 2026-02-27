@@ -201,6 +201,29 @@ export function getDeepReportMeta(projectId: string, reportId: string): DeepRepo
   return readJsonSafe<DeepReportMeta | null>(filePath, null)
 }
 
+export function getLatestDeepReportMeta(projectId: string): DeepReportMeta | null {
+  const reportsDir = path.join(projectDir(projectId), 'reports')
+  try {
+    if (!fs.existsSync(reportsDir)) return null
+    const entries = fs.readdirSync(reportsDir, { withFileTypes: true })
+    const deepDirs = entries
+      .filter((e) => e.isDirectory() && e.name.startsWith('deep-'))
+      .map((e) => ({
+        name: e.name,
+        mtime: fs.statSync(path.join(reportsDir, e.name, 'meta.json')).mtimeMs,
+      }))
+      .sort((a, b) => b.mtime - a.mtime)
+
+    if (deepDirs.length === 0) return null
+    return readJsonSafe<DeepReportMeta | null>(
+      path.join(reportsDir, deepDirs[0].name, 'meta.json'),
+      null,
+    )
+  } catch {
+    return null
+  }
+}
+
 export function saveDeepReportSection(projectId: string, reportId: string, sectionId: string, content: string): void {
   const dir = deepSectionsDir(projectId, reportId)
   ensureDir(dir)

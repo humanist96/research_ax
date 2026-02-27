@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import type { ProjectStatus } from '@/types'
 import type { DeepResearchEvent, ReportOutline } from '@/lib/deep-research/types'
 import { OutlineEditor } from './OutlineEditor'
@@ -30,6 +30,19 @@ interface SectionState {
   readonly message: string
 }
 
+interface ProgressData {
+  readonly active: boolean
+  readonly reportId: string | null
+  readonly phase: string | null
+  readonly outline: ReportOutline | null
+  readonly sections: readonly {
+    readonly id: string
+    readonly title: string
+    readonly status: SectionState['status']
+    readonly sourcesCount: number
+  }[]
+}
+
 const PHASE_STEPS = [
   { key: 'generating_outline' as const, label: '목차 생성' },
   { key: 'editing_outline' as const, label: '목차 편집' },
@@ -37,6 +50,8 @@ const PHASE_STEPS = [
   { key: 'compiling' as const, label: '보고서 작성' },
   { key: 'pdf' as const, label: 'PDF 생성' },
 ]
+
+const POLL_INTERVAL_MS = 3000
 
 function getPhaseIndex(phase: Phase): number {
   const map: Record<Phase, number> = {
@@ -86,6 +101,12 @@ function getSectionStatusColor(status: SectionState['status']): string {
   return colors[status]
 }
 
+function mapProgressPhase(phase: string | null): Phase {
+  if (!phase) return 'idle'
+  const valid: Phase[] = ['outline', 'researching', 'compiling', 'pdf', 'complete', 'error']
+  return valid.includes(phase as Phase) ? (phase as Phase) : 'researching'
+}
+
 export function DeepResearchPanel({ projectId, status, onStatusChange }: DeepResearchPanelProps) {
   const [phase, setPhase] = useState<Phase>('idle')
   const [sections, setSections] = useState<SectionState[]>([])
@@ -93,9 +114,106 @@ export function DeepResearchPanel({ projectId, status, onStatusChange }: DeepRes
   const [reportId, setReportId] = useState<string | null>(null)
   const [outline, setOutline] = useState<ReportOutline | null>(null)
   const [isRegeneratingOutline, setIsRegeneratingOutline] = useState(false)
+  const isStreamingRef = useRef(false)
+  const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const hasRestoredRef = useRef(false)
 
   const isRunning = phase !== 'idle' && phase !== 'complete' && phase !== 'error' && phase !== 'editing_outline'
   const isDisabled = isRunning || phase === 'editing_outline' || status === 'researching' || status === 'collecting' || status === 'analyzing' || status === 'reporting'
+
+  const stopPolling = useCallback(() => {
+    if (pollTimerRef.current) {
+      clearInterval(pollTimerRef.current)
+      pollTimerRef.current = null
+    }
+  }, [])
+
+  const applyProgress = useCallback((data: ProgressData) => {
+    const mappedPhase = mapProgressPhase(data.phase)
+
+    if (data.reportId) {
+      setReportId(data.reportId)
+    }
+
+    if (data.outline) {
+      setOutline(data.outline)
+    }
+
+    if (data.sections.length > 0) {
+      setSections(data.sections.map((s) => ({
+        id: s.id,
+        title: s.title,
+        status: s.status,
+        sourcesFound: s.sourcesCount > 0 ? s.sourcesCount : undefined,
+        message: getSectionStatusLabel(s.status),
+      })))
+    }
+
+    setPhase(mappedPhase)
+
+    if (mappedPhase === 'complete') {
+      onStatusChange('complete')
+    } else if (mappedPhase === 'error') {
+      onStatusChange('error')
+    }
+  }, [onStatusChange])
+
+  const fetchProgress = useCallback(async (): Promise<ProgressData | null> => {
+    try {
+      const res = await fetch(`/api/projects/${projectId}/deep-research/progress`)
+      const json = await res.json()
+      if (json.success) return json.data as ProgressData
+    } catch {
+      // Network error — ignore and retry next poll
+    }
+    return null
+  }, [projectId])
+
+  const startPolling = useCallback(() => {
+    stopPolling()
+    pollTimerRef.current = setInterval(async () => {
+      if (isStreamingRef.current) return
+
+      const data = await fetchProgress()
+      if (!data) return
+
+      applyProgress(data)
+
+      if (!data.active || data.phase === 'complete' || data.phase === 'error') {
+        stopPolling()
+      }
+    }, POLL_INTERVAL_MS)
+  }, [stopPolling, fetchProgress, applyProgress])
+
+  // Restore progress on mount if project is in 'researching' status
+  useEffect(() => {
+    if (hasRestoredRef.current) return
+    if (status !== 'researching') return
+
+    hasRestoredRef.current = true
+
+    ;(async () => {
+      const data = await fetchProgress()
+      if (!data) return
+
+      applyProgress(data)
+
+      if (data.active && data.phase !== 'complete' && data.phase !== 'error') {
+        startPolling()
+      }
+    })()
+
+    return () => {
+      stopPolling()
+    }
+  }, [status, fetchProgress, applyProgress, startPolling, stopPolling])
+
+  // Clean up polling on unmount
+  useEffect(() => {
+    return () => {
+      stopPolling()
+    }
+  }, [stopPolling])
 
   const generateOutline = useCallback(async () => {
     setPhase('generating_outline')
@@ -149,6 +267,7 @@ export function DeepResearchPanel({ projectId, status, onStatusChange }: DeepRes
     setError(null)
     setSections([])
     setReportId(null)
+    isStreamingRef.current = true
 
     try {
       const res = await fetch(`/api/projects/${projectId}/deep-research`, {
@@ -223,6 +342,8 @@ export function DeepResearchPanel({ projectId, status, onStatusChange }: DeepRes
       setError(msg)
       setPhase('error')
       onStatusChange('error')
+    } finally {
+      isStreamingRef.current = false
     }
   }, [projectId, onStatusChange])
 
