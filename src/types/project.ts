@@ -50,6 +50,7 @@ export interface ProjectConfig {
   readonly enrichArticles?: boolean
   readonly maxArticlesPerSource?: number
   readonly maxArticlesForAnalysis?: number
+  readonly keywordBlacklist?: readonly string[]
 }
 
 export interface CategoryDefinition {

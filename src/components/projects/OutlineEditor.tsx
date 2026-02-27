@@ -3,10 +3,15 @@
 import { useState, useCallback } from 'react'
 import type { ReportOutline, OutlineSection } from '@/lib/deep-research/types'
 
+export interface ResearchOptions {
+  readonly enableArticleReview: boolean
+  readonly keywordBlacklist: readonly string[]
+}
+
 interface OutlineEditorProps {
   readonly projectId: string
   readonly outline: ReportOutline
-  readonly onStartResearch: (outline: ReportOutline) => void
+  readonly onStartResearch: (outline: ReportOutline, options: ResearchOptions) => void
   readonly onRegenerate: () => void
   readonly isRegenerating: boolean
 }
@@ -200,6 +205,9 @@ export function OutlineEditor({
   const [collapsedIds, setCollapsedIds] = useState<ReadonlySet<string>>(new Set())
   const [showAddForm, setShowAddForm] = useState(false)
   const [regeneratingSectionId, setRegeneratingSectionId] = useState<string | null>(null)
+  const [enableArticleReview, setEnableArticleReview] = useState(false)
+  const [blacklistInput, setBlacklistInput] = useState('')
+  const [blacklistTags, setBlacklistTags] = useState<readonly string[]>([])
 
   const toggleCollapse = useCallback((id: string) => {
     setCollapsedIds((prev) => {
@@ -239,6 +247,27 @@ export function OutlineEditor({
     setShowAddForm(false)
   }, [])
 
+  const addBlacklistTag = useCallback((tag: string) => {
+    const trimmed = tag.trim()
+    if (trimmed && !blacklistTags.includes(trimmed)) {
+      setBlacklistTags((prev) => [...prev, trimmed])
+    }
+    setBlacklistInput('')
+  }, [blacklistTags])
+
+  const removeBlacklistTag = useCallback((tag: string) => {
+    setBlacklistTags((prev) => prev.filter((t) => t !== tag))
+  }, [])
+
+  const handleBlacklistKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault()
+      addBlacklistTag(blacklistInput)
+    } else if (e.key === 'Backspace' && blacklistInput === '' && blacklistTags.length > 0) {
+      setBlacklistTags((prev) => prev.slice(0, -1))
+    }
+  }, [blacklistInput, blacklistTags, addBlacklistTag])
+
   const handleRegenerateSection = useCallback(async (sectionId: string) => {
     setRegeneratingSectionId(sectionId)
     try {
@@ -269,8 +298,11 @@ export function OutlineEditor({
       ...initialOutline,
       sections,
     }
-    onStartResearch(editedOutline)
-  }, [initialOutline, sections, onStartResearch])
+    onStartResearch(editedOutline, {
+      enableArticleReview,
+      keywordBlacklist: blacklistTags,
+    })
+  }, [initialOutline, sections, onStartResearch, enableArticleReview, blacklistTags])
 
   return (
     <div className="space-y-4">
@@ -316,6 +348,51 @@ export function OutlineEditor({
           + 섹션 추가
         </button>
       )}
+
+      <div className="border border-white/10 rounded-lg p-4 space-y-3 bg-white/[0.02]">
+        <div className="flex items-center gap-3">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={enableArticleReview}
+              onChange={(e) => setEnableArticleReview(e.target.checked)}
+              className="w-4 h-4 rounded border-white/20 bg-white/5 text-indigo-500 focus:ring-indigo-500 focus:ring-offset-0 cursor-pointer"
+            />
+            <span className="text-sm text-gray-300">기사 검열 활성화</span>
+          </label>
+          <span className="text-xs text-gray-500">검색 후 기사를 검토하고 제외할 수 있습니다</span>
+        </div>
+
+        <div>
+          <label className="block text-sm text-gray-300 mb-1.5">키워드 블랙리스트</label>
+          <div className="flex flex-wrap items-center gap-1.5 min-h-[38px] bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5 focus-within:ring-1 focus-within:ring-indigo-500">
+            {blacklistTags.map((tag) => (
+              <span
+                key={tag}
+                className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-500/15 text-red-400 rounded text-xs"
+              >
+                {tag}
+                <button
+                  onClick={() => removeBlacklistTag(tag)}
+                  className="text-red-400/60 hover:text-red-400 transition-colors"
+                >
+                  &times;
+                </button>
+              </span>
+            ))}
+            <input
+              type="text"
+              value={blacklistInput}
+              onChange={(e) => setBlacklistInput(e.target.value)}
+              onKeyDown={handleBlacklistKeyDown}
+              onBlur={() => { if (blacklistInput.trim()) addBlacklistTag(blacklistInput) }}
+              placeholder={blacklistTags.length === 0 ? '제외할 키워드 입력 (Enter로 추가)' : ''}
+              className="flex-1 min-w-[120px] bg-transparent text-sm text-white placeholder-gray-500 focus:outline-none"
+            />
+          </div>
+          <p className="text-xs text-gray-500 mt-1">이 키워드가 포함된 기사는 자동으로 제외됩니다</p>
+        </div>
+      </div>
 
       <div className="flex justify-end pt-2">
         <button

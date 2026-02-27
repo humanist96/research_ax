@@ -2,8 +2,10 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react'
 import type { ProjectStatus } from '@/types'
-import type { DeepResearchEvent, ReportOutline } from '@/lib/deep-research/types'
+import type { DeepResearchEvent, ReportOutline, ArticlesForReview } from '@/lib/deep-research/types'
 import { OutlineEditor } from './OutlineEditor'
+import type { ResearchOptions } from './OutlineEditor'
+import { ArticleReviewPanel } from './ArticleReviewPanel'
 
 interface DeepResearchPanelProps {
   readonly projectId: string
@@ -17,6 +19,7 @@ type Phase =
   | 'editing_outline'
   | 'outline'
   | 'researching'
+  | 'reviewing_articles'
   | 'compiling'
   | 'pdf'
   | 'complete'
@@ -43,7 +46,7 @@ interface ProgressData {
   }[]
 }
 
-const PHASE_STEPS = [
+const PHASE_STEPS_DEFAULT = [
   { key: 'generating_outline' as const, label: '목차 생성' },
   { key: 'editing_outline' as const, label: '목차 편집' },
   { key: 'researching' as const, label: '섹션 리서치' },
@@ -51,15 +54,40 @@ const PHASE_STEPS = [
   { key: 'pdf' as const, label: 'PDF 생성' },
 ]
 
+const PHASE_STEPS_WITH_REVIEW = [
+  { key: 'generating_outline' as const, label: '목차 생성' },
+  { key: 'editing_outline' as const, label: '목차 편집' },
+  { key: 'researching' as const, label: '기사 검색' },
+  { key: 'reviewing_articles' as const, label: '기사 리뷰' },
+  { key: 'compiling' as const, label: '보고서 작성' },
+  { key: 'pdf' as const, label: 'PDF 생성' },
+]
+
 const POLL_INTERVAL_MS = 3000
 
-function getPhaseIndex(phase: Phase): number {
+function getPhaseIndex(phase: Phase, hasReview: boolean): number {
+  if (hasReview) {
+    const map: Record<Phase, number> = {
+      idle: -1,
+      generating_outline: 0,
+      editing_outline: 1,
+      outline: 0,
+      researching: 2,
+      reviewing_articles: 3,
+      compiling: 4,
+      pdf: 5,
+      complete: 6,
+      error: -1,
+    }
+    return map[phase]
+  }
   const map: Record<Phase, number> = {
     idle: -1,
     generating_outline: 0,
     editing_outline: 1,
     outline: 0,
     researching: 2,
+    reviewing_articles: 2,
     compiling: 3,
     pdf: 4,
     complete: 5,
@@ -103,7 +131,7 @@ function getSectionStatusColor(status: SectionState['status']): string {
 
 function mapProgressPhase(phase: string | null): Phase {
   if (!phase) return 'idle'
-  const valid: Phase[] = ['outline', 'researching', 'compiling', 'pdf', 'complete', 'error']
+  const valid: Phase[] = ['outline', 'researching', 'reviewing_articles', 'compiling', 'pdf', 'complete', 'error']
   return valid.includes(phase as Phase) ? (phase as Phase) : 'researching'
 }
 
@@ -114,12 +142,15 @@ export function DeepResearchPanel({ projectId, status, onStatusChange }: DeepRes
   const [reportId, setReportId] = useState<string | null>(null)
   const [outline, setOutline] = useState<ReportOutline | null>(null)
   const [isRegeneratingOutline, setIsRegeneratingOutline] = useState(false)
+  const [articlesForReview, setArticlesForReview] = useState<readonly ArticlesForReview[] | null>(null)
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false)
+  const [hasArticleReview, setHasArticleReview] = useState(false)
   const isStreamingRef = useRef(false)
   const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const hasRestoredRef = useRef(false)
 
-  const isRunning = phase !== 'idle' && phase !== 'complete' && phase !== 'error' && phase !== 'editing_outline'
-  const isDisabled = isRunning || phase === 'editing_outline' || status === 'researching' || status === 'collecting' || status === 'analyzing' || status === 'reporting'
+  const isRunning = phase !== 'idle' && phase !== 'complete' && phase !== 'error' && phase !== 'editing_outline' && phase !== 'reviewing_articles'
+  const isDisabled = isRunning || phase === 'editing_outline' || phase === 'reviewing_articles' || status === 'researching' || status === 'collecting' || status === 'analyzing' || status === 'reporting'
 
   const stopPolling = useCallback(() => {
     if (pollTimerRef.current) {
@@ -262,18 +293,24 @@ export function DeepResearchPanel({ projectId, status, onStatusChange }: DeepRes
     }
   }, [projectId])
 
-  const startResearchWithOutline = useCallback(async (editedOutline: ReportOutline) => {
+  const startResearchWithOutline = useCallback(async (editedOutline: ReportOutline, options?: ResearchOptions) => {
     setPhase('researching')
     setError(null)
     setSections([])
     setReportId(null)
+    setArticlesForReview(null)
+    setHasArticleReview(options?.enableArticleReview ?? false)
     isStreamingRef.current = true
 
     try {
       const res = await fetch(`/api/projects/${projectId}/deep-research`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ outline: editedOutline }),
+        body: JSON.stringify({
+          outline: editedOutline,
+          enableArticleReview: options?.enableArticleReview ?? false,
+          keywordBlacklist: options?.keywordBlacklist ?? [],
+        }),
       })
 
       if (!res.ok) {
@@ -311,6 +348,8 @@ export function DeepResearchPanel({ projectId, status, onStatusChange }: DeepRes
                 setError(event.message)
                 onStatusChange('error')
               }
+            } else if (event.type === 'articles_ready') {
+              setArticlesForReview(event.sections)
             } else if (event.type === 'outline') {
               const initialSections: SectionState[] = event.outline.sections.map((s) => ({
                 id: s.id,
@@ -347,7 +386,29 @@ export function DeepResearchPanel({ projectId, status, onStatusChange }: DeepRes
     }
   }, [projectId, onStatusChange])
 
-  const currentPhaseIdx = getPhaseIndex(phase)
+  const handleSubmitReview = useCallback(async (excludedBySection: Record<string, string[]>) => {
+    setIsSubmittingReview(true)
+    try {
+      const res = await fetch(`/api/projects/${projectId}/deep-research/review-articles`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ excludedBySection }),
+      })
+      const data = await res.json()
+      if (!data.success) {
+        throw new Error(data.error ?? 'Failed to submit review')
+      }
+      setArticlesForReview(null)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      setError(msg)
+    } finally {
+      setIsSubmittingReview(false)
+    }
+  }, [projectId])
+
+  const phaseSteps = hasArticleReview ? PHASE_STEPS_WITH_REVIEW : PHASE_STEPS_DEFAULT
+  const currentPhaseIdx = getPhaseIndex(phase, hasArticleReview)
   const completedSections = sections.filter((s) => s.status === 'complete').length
 
   return (
@@ -371,7 +432,7 @@ export function DeepResearchPanel({ projectId, status, onStatusChange }: DeepRes
       {phase !== 'idle' && (
         <>
           <div className="flex items-center gap-2 mb-4">
-            {PHASE_STEPS.map((step, i) => {
+            {phaseSteps.map((step, i) => {
               const stepStatus = getStepStatus(i, currentPhaseIdx, phase)
               return (
                 <div key={step.key} className="flex items-center gap-2 flex-1">
@@ -393,7 +454,7 @@ export function DeepResearchPanel({ projectId, status, onStatusChange }: DeepRes
                     </span>
                     <span className="font-medium truncate">{step.label}</span>
                   </div>
-                  {i < PHASE_STEPS.length - 1 && (
+                  {i < phaseSteps.length - 1 && (
                     <span className="text-gray-600 shrink-0">&rarr;</span>
                   )}
                 </div>
@@ -418,7 +479,16 @@ export function DeepResearchPanel({ projectId, status, onStatusChange }: DeepRes
             />
           )}
 
-          {sections.length > 0 && phase !== 'editing_outline' && (
+          {phase === 'reviewing_articles' && articlesForReview && (
+            <ArticleReviewPanel
+              projectId={projectId}
+              sections={articlesForReview}
+              onSubmit={handleSubmitReview}
+              isSubmitting={isSubmittingReview}
+            />
+          )}
+
+          {sections.length > 0 && phase !== 'editing_outline' && phase !== 'reviewing_articles' && (
             <div className="border border-white/10 rounded-lg divide-y divide-white/10">
               {sections.map((section) => (
                 <div key={section.id} className="flex items-center justify-between px-4 py-3 text-sm">
@@ -443,7 +513,7 @@ export function DeepResearchPanel({ projectId, status, onStatusChange }: DeepRes
             </div>
           )}
 
-          {sections.length > 0 && phase !== 'editing_outline' && (
+          {sections.length > 0 && phase !== 'editing_outline' && phase !== 'reviewing_articles' && (
             <p className="mt-3 text-sm text-gray-500">
               {completedSections}/{sections.length} 섹션 완료
             </p>

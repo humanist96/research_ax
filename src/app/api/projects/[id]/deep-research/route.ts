@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { getProject, setProjectStatus } from '@/lib/project/store'
 import { runDeepResearch } from '@/lib/deep-research/orchestrator'
 import type { DeepResearchEvent, ReportOutline } from '@/lib/deep-research/types'
+import type { ProjectConfig } from '@/types'
 
 export async function POST(
   request: NextRequest,
@@ -32,10 +33,22 @@ export async function POST(
   }
 
   let providedOutline: ReportOutline | undefined
+  let enableArticleReview = false
+  let keywordBlacklist: readonly string[] = []
   try {
-    const body = await request.json() as { outline?: ReportOutline }
+    const body = await request.json() as {
+      outline?: ReportOutline
+      enableArticleReview?: boolean
+      keywordBlacklist?: string[]
+    }
     if (body.outline) {
       providedOutline = body.outline
+    }
+    if (body.enableArticleReview) {
+      enableArticleReview = true
+    }
+    if (Array.isArray(body.keywordBlacklist)) {
+      keywordBlacklist = body.keywordBlacklist.filter((k): k is string => typeof k === 'string' && k.trim().length > 0)
     }
   } catch {
     // No body or invalid JSON — proceed without outline
@@ -43,7 +56,9 @@ export async function POST(
 
   setProjectStatus(id, 'researching')
 
-  const config = project.config
+  const config: ProjectConfig = keywordBlacklist.length > 0
+    ? { ...project.config, keywordBlacklist }
+    : project.config
 
   const stream = new ReadableStream({
     start(controller) {
@@ -58,7 +73,7 @@ export async function POST(
         }
       }
 
-      runDeepResearch(id, config, emit, providedOutline).finally(() => {
+      runDeepResearch(id, config, emit, providedOutline, { enableArticleReview }).finally(() => {
         try {
           controller.close()
         } catch {

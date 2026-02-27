@@ -38,7 +38,7 @@ export interface DeepReportMeta {
 
 export type DeepReportSectionStatus = 'pending' | 'searching' | 'analyzing' | 'deepening' | 'refining' | 'complete' | 'error'
 
-export type DeepReportPhase = 'outline' | 'researching' | 'compiling' | 'pdf' | 'complete' | 'error'
+export type DeepReportPhase = 'outline' | 'researching' | 'reviewing_articles' | 'compiling' | 'pdf' | 'complete' | 'error'
 
 export interface DeepReportSectionMeta {
   readonly id: string
@@ -47,10 +47,24 @@ export interface DeepReportSectionMeta {
   readonly status: DeepReportSectionStatus
 }
 
+export interface ArticleForReview {
+  readonly title: string
+  readonly link: string
+  readonly source: string
+  readonly pubDate: string
+}
+
+export interface ArticlesForReview {
+  readonly sectionId: string
+  readonly sectionTitle: string
+  readonly articles: readonly ArticleForReview[]
+}
+
 export type DeepResearchEvent =
-  | { readonly type: 'phase'; readonly phase: 'outline' | 'researching' | 'compiling' | 'pdf' | 'complete' | 'error'; readonly message: string }
+  | { readonly type: 'phase'; readonly phase: 'outline' | 'researching' | 'reviewing_articles' | 'compiling' | 'pdf' | 'complete' | 'error'; readonly message: string }
   | { readonly type: 'outline'; readonly outline: ReportOutline }
   | { readonly type: 'section_status'; readonly sectionId: string; readonly status: 'pending' | 'searching' | 'analyzing' | 'deepening' | 'refining' | 'complete' | 'error'; readonly sourcesFound?: number; readonly message: string }
   | { readonly type: 'section_saved'; readonly sectionId: string; readonly title: string }
+  | { readonly type: 'articles_ready'; readonly sections: readonly ArticlesForReview[] }
   | { readonly type: 'report_complete'; readonly reportId: string }
   | { readonly type: 'error'; readonly message: string }

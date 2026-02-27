@@ -3,10 +3,11 @@ import type { OutlineSection, SectionResearchResult, SourceReference } from './t
 import { searchForSection } from '@/lib/collector/aggregator'
 import { callClaudeAsync } from './claude-async'
 import { filterRelevantArticles } from './relevance-filter'
+import { filterByKeywordBlacklist } from './keyword-filter'
 
 type SectionProgress = (status: 'searching' | 'analyzing' | 'deepening' | 'refining', message: string, sourcesFound?: number) => void
 
-interface ArticleItem {
+export interface ArticleItem {
   readonly title: string
   readonly content: string
   readonly link: string
@@ -244,26 +245,24 @@ function deduplicateArticles(articles: readonly ArticleItem[]): readonly Article
   })
 }
 
-export async function researchSection(
+/**
+ * Phase 1 only: search + keyword blacklist filter + Haiku relevance filter.
+ * Returns filtered articles ready for analysis or user review.
+ */
+export async function searchAndFilterSection(
   section: OutlineSection,
   config: ProjectConfig,
   onProgress?: SectionProgress,
-): Promise<SectionResearchResult> {
-  // Step 1: Initial search
+): Promise<readonly ArticleItem[]> {
   onProgress?.('searching', `"${section.title}" 검색 중...`)
 
   const searchResults = await searchForSection(section.searchQueries, config)
 
   const sourcesFound = searchResults.length
-  onProgress?.('analyzing', `${sourcesFound}건 기사 분석 중...`, sourcesFound)
+  onProgress?.('searching', `${sourcesFound}건 수집 완료, 필터링 중...`, sourcesFound)
 
   if (searchResults.length === 0) {
-    return {
-      sectionId: section.id,
-      title: section.title,
-      content: `이 섹션에 대한 최신 뉴스를 찾지 못했습니다. 검색어: ${section.searchQueries.join(', ')}`,
-      sources: [],
-    }
+    return []
   }
 
   const rawArticles: ArticleItem[] = searchResults.map((r) => ({
@@ -274,12 +273,39 @@ export async function researchSection(
     pubDate: r.pubDate,
   }))
 
-  // Step 1.5: Relevance filtering (Haiku)
-  const initialArticles = await filterRelevantArticles(section, rawArticles)
-  onProgress?.('analyzing', `${sourcesFound}건 중 ${initialArticles.length}건 선별, 분석 중...`, initialArticles.length)
+  // Keyword blacklist filter (always applied)
+  const afterBlacklist = filterByKeywordBlacklist(rawArticles, config.keywordBlacklist ?? [])
+
+  // Haiku relevance filter
+  const filtered = await filterRelevantArticles(section, afterBlacklist)
+  onProgress?.('searching', `${sourcesFound}건 중 ${filtered.length}건 선별`, filtered.length)
+
+  return filtered as readonly ArticleItem[]
+}
+
+/**
+ * Phase 2: analysis pipeline (initial analysis → gap detection → deepening → refinement).
+ * Takes pre-filtered articles from searchAndFilterSection.
+ */
+export async function analyzeSection(
+  section: OutlineSection,
+  articles: readonly ArticleItem[],
+  config: ProjectConfig,
+  onProgress?: SectionProgress,
+): Promise<SectionResearchResult> {
+  if (articles.length === 0) {
+    return {
+      sectionId: section.id,
+      title: section.title,
+      content: `이 섹션에 대한 최신 뉴스를 찾지 못했습니다. 검색어: ${section.searchQueries.join(', ')}`,
+      sources: [],
+    }
+  }
+
+  onProgress?.('analyzing', `${articles.length}건 기사 분석 중...`, articles.length)
 
   // Step 2: Initial analysis (Opus)
-  const analysisPrompt = buildSectionAnalysisPrompt(section, initialArticles, config)
+  const analysisPrompt = buildSectionAnalysisPrompt(section, articles, config)
   const initialContent = await callClaudeAsync(analysisPrompt, { model: 'opus' })
 
   // Step 3: Gap detection + follow-up search (Sonnet)
@@ -289,7 +315,7 @@ export async function researchSection(
   const gapRaw = await callClaudeAsync(gapPrompt, { model: 'sonnet' })
   const gapResult = parseGapDetectionResult(gapRaw)
 
-  let allArticles = initialArticles
+  let allArticles: readonly ArticleItem[] = articles
   let integratedContent = initialContent
 
   if (gapResult.followUpQueries.length > 0 && gapResult.assessment === 'needs_deepening') {
@@ -304,12 +330,12 @@ export async function researchSection(
         pubDate: r.pubDate,
       }))
 
-      const additionalArticles = await filterRelevantArticles(section, rawAdditionalArticles)
-      allArticles = deduplicateArticles([...initialArticles, ...additionalArticles]) as ArticleItem[]
+      const afterBlacklist = filterByKeywordBlacklist(rawAdditionalArticles, config.keywordBlacklist ?? [])
+      const additionalArticles = await filterRelevantArticles(section, afterBlacklist)
+      allArticles = deduplicateArticles([...articles, ...additionalArticles])
 
       onProgress?.('deepening', `추가 ${additionalResults.length}건 중 ${additionalArticles.length}건 선별, 통합 분석 중...`, allArticles.length)
 
-      // Re-analyze with all articles (Opus)
       const integratedPrompt = buildIntegratedAnalysisPrompt(
         section,
         additionalArticles,
@@ -343,4 +369,17 @@ export async function researchSection(
     content: finalContent,
     sources,
   }
+}
+
+/**
+ * Full pipeline: search + filter + analyze in one call.
+ * Backward compatible — calls searchAndFilterSection then analyzeSection.
+ */
+export async function researchSection(
+  section: OutlineSection,
+  config: ProjectConfig,
+  onProgress?: SectionProgress,
+): Promise<SectionResearchResult> {
+  const articles = await searchAndFilterSection(section, config, onProgress)
+  return analyzeSection(section, articles, config, onProgress)
 }
