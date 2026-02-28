@@ -158,7 +158,7 @@ async function runStandardResearch(
   results: SectionResearchResult[],
   persistProgress: () => void,
 ): Promise<void> {
-  const limiter = createConcurrencyLimiter(outline.sections.length)
+  const limiter = createConcurrencyLimiter(Math.min(outline.sections.length, 3))
 
   const sectionPromises = outline.sections.map((section) =>
     limiter.run(async () => {
@@ -209,7 +209,7 @@ async function runWithArticleReview(
   results: SectionResearchResult[],
   persistProgress: () => void,
 ): Promise<void> {
-  const limiter = createConcurrencyLimiter(outline.sections.length)
+  const limiter = createConcurrencyLimiter(Math.min(outline.sections.length, 3))
 
   // Step 1: Search and filter all sections in parallel
   const searchPromises = outline.sections.map((section) =>
@@ -275,7 +275,7 @@ async function runWithArticleReview(
   // Step 4: Filter excluded articles and run analysis
   emit({ type: 'phase', phase: 'researching', message: '선별된 기사로 분석을 진행합니다...' })
 
-  const analysisLimiter = createConcurrencyLimiter(outline.sections.length)
+  const analysisLimiter = createConcurrencyLimiter(Math.min(outline.sections.length, 3))
 
   const analysisPromises = outline.sections.map((section) =>
     analysisLimiter.run(async () => {

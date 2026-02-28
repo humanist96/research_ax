@@ -36,7 +36,7 @@ ${searchQueriesList}
 
 ## 출력 규칙
 - 4~7개의 섹션으로 구성
-- 각 섹션에는 2~3개의 구체적인 Google News 검색 쿼리 포함 (한국어)
+- 각 섹션에는 3~5개의 구체적인 Google News 검색 쿼리 포함 (한국어)
 - 각 섹션에는 2~4개의 핵심 포인트(분석 시 다뤄야 할 내용) 포함
 - 섹션 ID는 영문 소문자+하이픈 형식 (예: market-overview)
 - executiveSummaryGuidance: 최종 요약 작성 시 강조할 핵심 관점
@@ -76,7 +76,7 @@ function parseOutlineResponse(text: string): ReportOutline {
     id: String(s.id ?? `section-${idx + 1}`),
     title: String(s.title ?? ''),
     description: String(s.description ?? ''),
-    searchQueries: Array.isArray(s.searchQueries) ? s.searchQueries.map(String).slice(0, 3) : [],
+    searchQueries: Array.isArray(s.searchQueries) ? s.searchQueries.map(String).slice(0, 5) : [],
     keyPoints: Array.isArray(s.keyPoints) ? s.keyPoints.map(String).slice(0, 4) : [],
   }))
 
@@ -124,7 +124,7 @@ ID: ${sectionId}
 
 ## 요구사항
 - 기존 다른 섹션들과 내용이 중복되지 않도록 새로운 관점으로 작성
-- 2~3개의 구체적인 Google News 검색 쿼리 포함 (한국어)
+- 3~5개의 구체적인 Google News 검색 쿼리 포함 (한국어)
 - 2~4개의 핵심 포인트 포함
 - 섹션 ID는 그대로 유지: ${sectionId}
 
@@ -151,7 +151,7 @@ function parseSectionResponse(text: string): OutlineSection {
     id: String(s.id ?? 'section'),
     title: String(s.title ?? ''),
     description: String(s.description ?? ''),
-    searchQueries: Array.isArray(s.searchQueries) ? s.searchQueries.map(String).slice(0, 3) : [],
+    searchQueries: Array.isArray(s.searchQueries) ? s.searchQueries.map(String).slice(0, 5) : [],
     keyPoints: Array.isArray(s.keyPoints) ? s.keyPoints.map(String).slice(0, 4) : [],
   }
 }

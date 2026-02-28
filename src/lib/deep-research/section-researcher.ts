@@ -58,11 +58,11 @@ ${getVisualGuidelinesBlock()}
 ## 작성 규칙
 1. 기사를 단순 나열하지 말고, 통합된 분석을 서술하세요
 2. 핵심 포인트를 중심으로 논리적으로 구성하세요
-3. 중요한 사실에는 출처를 인라인으로 표기하세요 (예: "~로 나타났다[1]")
-4. **1000~3000자** 분량으로 심층적으로 작성하세요
+3. 중요한 사실에는 출처를 인라인으로 표기하세요 (예: "~로 나타났다[출처명]")
+4. **1500~4000자** 분량으로 심층적으로 작성하세요
 5. 마크다운 형식으로 작성하되, 섹션 제목(##)은 포함하지 마세요
 6. 소제목(###)을 활용하여 섹션 내부를 구조화하세요
-7. 수치, 통계, 구체적 사례를 적극 활용하세요
+7. **정량적 데이터(수치, 통계, %)를 최우선으로 인용**하세요. 기사에서 언급된 구체적 숫자, 금액, 비율을 빠짐없이 포함하세요
 8. **인과관계 분석**: 왜 이런 현상이 발생했는지 원인과 결과를 명확히 서술하세요
 9. **비교 분석**: 관련 사례, 기간별 변화, 경쟁 구도 등 비교 관점을 포함하세요
 10. **시사점 도출**: 분석 결과가 의미하는 바와 향후 전망을 제시하세요
@@ -306,13 +306,13 @@ export async function analyzeSection(
 
   // Step 2: Initial analysis (Opus)
   const analysisPrompt = buildSectionAnalysisPrompt(section, articles, config)
-  const initialContent = await callClaudeAsync(analysisPrompt, { model: 'opus' })
+  const initialContent = await callClaudeAsync(analysisPrompt, { model: 'opus', maxTokens: 8192 })
 
   // Step 3: Gap detection + follow-up search (Sonnet)
   onProgress?.('deepening', '갭 탐지 및 심화 검색 중...')
 
   const gapPrompt = buildGapDetectionPrompt(section, initialContent, config)
-  const gapRaw = await callClaudeAsync(gapPrompt, { model: 'sonnet' })
+  const gapRaw = await callClaudeAsync(gapPrompt, { model: 'opus', maxTokens: 4096 })
   const gapResult = parseGapDetectionResult(gapRaw)
 
   let allArticles: readonly ArticleItem[] = articles
@@ -343,7 +343,7 @@ export async function analyzeSection(
         gapResult.gaps,
         config,
       )
-      integratedContent = await callClaudeAsync(integratedPrompt, { model: 'opus' })
+      integratedContent = await callClaudeAsync(integratedPrompt, { model: 'opus', maxTokens: 8192 })
     }
   }
 
@@ -351,7 +351,7 @@ export async function analyzeSection(
   onProgress?.('refining', '자기비평 및 품질 개선 중...')
 
   const critiquePrompt = buildCritiqueAndRefinePrompt(section, integratedContent, config)
-  const refinedContent = await callClaudeAsync(critiquePrompt, { model: 'sonnet' })
+  const refinedContent = await callClaudeAsync(critiquePrompt, { model: 'opus', maxTokens: 8192 })
 
   // Step 5: Build source references
   const sources: SourceReference[] = allArticles.map((a) => ({

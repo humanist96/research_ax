@@ -12,7 +12,7 @@ function buildExecutiveSummaryPrompt(
   config: ProjectConfig,
 ): string {
   const sectionSummaries = results
-    .map((s) => `- **${s.title}**: ${s.content.slice(0, 300)}...`)
+    .map((s) => `- **${s.title}**: ${s.content.slice(0, 800)}...`)
     .join('\n')
 
   return `당신은 "${config.reportTitle}" 보고서의 핵심 요약(Executive Summary)을 작성하는 전문 편집자입니다.
@@ -29,7 +29,7 @@ ${sectionSummaries}
 1. 보고서 전체의 핵심 발견과 시사점을 3~5문장으로 압축하세요
 2. 가장 중요한 수치와 트렌드를 포함하세요
 3. 독자가 이 요약만 읽어도 보고서의 핵심을 파악할 수 있어야 합니다
-4. **600~1000자** 분량으로 작성하세요
+4. **800~1500자** 분량으로 작성하세요
 5. 마크다운 형식이되, 제목(##)은 포함하지 마세요
 6. **핵심 지표 요약 표**: 보고서에서 도출된 주요 수치/지표를 마크다운 표로 정리하세요
 7. Mermaid 다이어그램은 사용하지 마세요 (이 섹션은 텍스트+표 위주)
@@ -43,7 +43,7 @@ function buildConclusionPrompt(
   config: ProjectConfig,
 ): string {
   const sectionSummaries = results
-    .map((s) => `- **${s.title}**: ${s.content.slice(0, 300)}...`)
+    .map((s) => `- **${s.title}**: ${s.content.slice(0, 800)}...`)
     .join('\n')
 
   return `당신은 "${config.reportTitle}" 보고서의 결론 및 전망을 작성하는 전문 편집자입니다.
@@ -65,7 +65,7 @@ ${sectionSummaries}
 1. 보고서의 핵심 발견을 종합하세요
 2. 향후 주목해야 할 트렌드와 전망을 제시하세요
 3. 실행 가능한 시사점(actionable insights)을 포함하세요
-4. **600~1000자** 분량으로 작성하세요
+4. **800~1500자** 분량으로 작성하세요
 5. 마크다운 형식이되, 제목(##)은 포함하지 마세요
 6. 표나 다이어그램을 활용하여 전망과 시사점을 구조화하세요
 

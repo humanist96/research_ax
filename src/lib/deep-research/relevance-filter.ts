@@ -1,7 +1,7 @@
 import type { OutlineSection } from './types'
 import { callClaudeAsync } from './claude-async'
 
-export async function filterRelevantArticles<T extends { readonly title: string }>(
+export async function filterRelevantArticles<T extends { readonly title: string; readonly content?: string }>(
   section: OutlineSection,
   articles: readonly T[],
 ): Promise<readonly T[]> {
@@ -12,7 +12,7 @@ export async function filterRelevantArticles<T extends { readonly title: string 
   }
 
   const titlesBlock = articles
-    .map((a, i) => `${i + 1}. ${a.title}`)
+    .map((a, i) => `${i + 1}. ${a.title}\n요약: ${a.content?.slice(0, 500) ?? ''}`)
     .join('\n')
 
   const prompt = `당신은 뉴스 기사 관련성 판정 전문가입니다.
@@ -22,12 +22,12 @@ export async function filterRelevantArticles<T extends { readonly title: string 
 - 설명: ${section.description}
 - 핵심 포인트: ${section.keyPoints.join(', ')}
 
-## 기사 제목 목록
+## 기사 목록
 ${titlesBlock}
 
 ## 지시
 각 기사가 위 섹션 주제와 관련이 있는지 판정하세요.
-제목만으로 판단하되, 조금이라도 관련이 있으면 "관련"으로 분류하세요.
+제목과 요약 내용을 함께 고려하여, 조금이라도 관련이 있으면 "관련"으로 분류하세요.
 
 ## 출력 (JSON만 출력)
 \`\`\`json

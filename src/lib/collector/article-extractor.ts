@@ -1,7 +1,7 @@
 import * as cheerio from 'cheerio'
 import type { SearchResult } from './types'
 
-const MAX_BODY_LENGTH = 5000
+const MAX_BODY_LENGTH = 15000
 const DEFAULT_TIMEOUT_MS = 8000
 const DEFAULT_CONCURRENCY = 5
 

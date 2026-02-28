@@ -3,19 +3,23 @@ import { spawn } from 'child_process'
 export interface ClaudeOptions {
   readonly model?: string
   readonly maxTokens?: number
+  readonly maxRetries?: number
 }
 
-export function callClaudeAsync(prompt: string, options?: ClaudeOptions): Promise<string> {
+const DEFAULT_MAX_TOKENS: Record<string, number> = {
+  opus: 8192,
+  sonnet: 4096,
+  haiku: 2048,
+}
+
+function spawnClaude(prompt: string, options?: ClaudeOptions): Promise<string> {
   return new Promise((resolve, reject) => {
     const env = { ...process.env }
     delete env.CLAUDECODE
 
     const model = options?.model ?? 'opus'
-    const args = ['--print', '--model', model]
-
-    if (options?.maxTokens) {
-      args.push('--max-tokens', String(options.maxTokens))
-    }
+    const maxTokens = options?.maxTokens ?? DEFAULT_MAX_TOKENS[model] ?? 4096
+    const args = ['--print', '--model', model, '--max-tokens', String(maxTokens)]
 
     const child = spawn('claude', args, {
       env,
@@ -48,6 +52,31 @@ export function callClaudeAsync(prompt: string, options?: ClaudeOptions): Promis
     child.stdin.write(prompt)
     child.stdin.end()
   })
+}
+
+export async function callClaudeAsync(
+  prompt: string,
+  options?: ClaudeOptions,
+): Promise<string> {
+  const maxRetries = options?.maxRetries ?? 2
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await spawnClaude(prompt, options)
+    } catch (error) {
+      const isLastAttempt = attempt === maxRetries
+      if (isLastAttempt) {
+        throw error
+      }
+
+      const backoffMs = 3000 * Math.pow(3, attempt) // 3s, 9s
+      const msg = error instanceof Error ? error.message : String(error)
+      console.error(`[Claude CLI] Attempt ${attempt + 1} failed: ${msg}. Retrying in ${backoffMs / 1000}s...`)
+      await new Promise((resolve) => setTimeout(resolve, backoffMs))
+    }
+  }
+
+  throw new Error('Unreachable: retry loop exited without returning or throwing')
 }
 
 interface ConcurrencyLimiter {
