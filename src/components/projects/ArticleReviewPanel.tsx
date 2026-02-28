@@ -74,7 +74,7 @@ function SectionReviewCard({
                   type="checkbox"
                   checked={!isExcluded}
                   onChange={() => onToggleArticle(article.link)}
-                  className="mt-0.5 w-4 h-4 rounded border-white/20 bg-white/5 text-indigo-500 focus:ring-indigo-500 focus:ring-offset-0 cursor-pointer shrink-0"
+                  className="mt-0.5 w-4 h-4 rounded border-white/20 bg-white/5 text-blue-500 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer shrink-0"
                 />
                 <div className="min-w-0 flex-1">
                   <p className={`text-sm leading-snug ${isExcluded ? 'text-gray-500 line-through' : 'text-gray-200'}`}>
@@ -173,7 +173,7 @@ export function ArticleReviewPanel({ projectId, sections, onSubmit, isSubmitting
         <button
           onClick={handleSubmit}
           disabled={isSubmitting}
-          className="px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-violet-500 text-white rounded-lg hover:from-indigo-600 hover:to-violet-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-all"
+          className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-lg hover:from-blue-700 hover:to-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-all"
         >
           {isSubmitting ? '제출 중...' : `분석 진행 (${totalArticles - totalExcluded}건)`}
         </button>

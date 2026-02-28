@@ -423,7 +423,7 @@ export function DeepResearchPanel({ projectId, status, onStatusChange }: DeepRes
         <button
           onClick={generateOutline}
           disabled={isDisabled}
-          className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-violet-500 text-white rounded-lg hover:from-indigo-600 hover:to-violet-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-all"
+          className="px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-lg hover:from-blue-700 hover:to-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-all"
         >
           {isRunning ? '리서치 중...' : '딥 리서치 실행'}
         </button>
@@ -440,14 +440,14 @@ export function DeepResearchPanel({ projectId, status, onStatusChange }: DeepRes
                     stepStatus === 'done'
                       ? 'bg-green-500/10 text-green-400'
                       : stepStatus === 'active'
-                      ? 'bg-indigo-500/10 text-indigo-400'
+                      ? 'bg-blue-500/10 text-blue-400'
                       : 'bg-white/5 text-gray-500'
                   }`}>
                     <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
                       stepStatus === 'done'
                         ? 'bg-green-500 text-white'
                         : stepStatus === 'active'
-                        ? 'bg-indigo-500 text-white animate-pulse'
+                        ? 'bg-blue-500 text-white animate-pulse'
                         : 'bg-white/10 text-gray-500'
                     }`}>
                       {stepStatus === 'done' ? '\u2713' : i + 1}
@@ -464,7 +464,7 @@ export function DeepResearchPanel({ projectId, status, onStatusChange }: DeepRes
 
           {phase === 'generating_outline' && (
             <div className="flex items-center gap-3 py-8 justify-center text-gray-400 text-sm">
-              <span className="w-5 h-5 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+              <span className="w-5 h-5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
               목차를 생성하고 있습니다...
             </div>
           )}

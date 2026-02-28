@@ -22,7 +22,7 @@ const FEATURES = [
     ),
     title: 'AI 분석 엔진',
     description: 'Claude AI가 수집된 기사를 카테고리별로 분류하고, 핵심 내용을 요약하여 인사이트를 추출합니다.',
-    gradient: 'from-violet-500 to-purple-400',
+    gradient: 'from-sky-500 to-blue-400',
   },
   {
     icon: (

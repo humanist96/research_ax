@@ -47,7 +47,7 @@ export default function ChatPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center py-12 text-red-400">
           <p>{error ?? 'Project not found'}</p>
-          <a href="/projects" className="text-indigo-400 hover:underline text-sm mt-2 inline-block">
+          <a href="/projects" className="text-blue-400 hover:underline text-sm mt-2 inline-block">
             워크스페이스로 돌아가기
           </a>
         </div>

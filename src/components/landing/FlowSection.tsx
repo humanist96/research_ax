@@ -7,13 +7,13 @@ const STEPS = [
     number: '01',
     title: '대화형 설정',
     description: 'AI와 대화하며 리서치 주제와 범위를 정의합니다',
-    gradient: 'from-indigo-500 to-violet-500',
+    gradient: 'from-blue-600 to-cyan-500',
   },
   {
     number: '02',
     title: '멀티소스 수집',
     description: 'Google, Naver, Daum, RSS에서 관련 기사를 수집합니다',
-    gradient: 'from-violet-500 to-purple-500',
+    gradient: 'from-sky-500 to-cyan-500',
   },
   {
     number: '03',

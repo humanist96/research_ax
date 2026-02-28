@@ -187,7 +187,7 @@ export function ChatInterface({
       </div>
 
       <div className="flex-1 overflow-y-auto bg-slate-900/50 p-4 space-y-4">
-        <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-lg p-3 text-sm text-indigo-300">
+        <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 text-sm text-blue-300">
           <span className="font-medium">리서치 주제:</span> {initialPrompt}
         </div>
 
@@ -199,7 +199,7 @@ export function ChatInterface({
             <div
               className={`max-w-[80%] rounded-lg p-3 text-sm whitespace-pre-wrap ${
                 turn.role === 'user'
-                  ? 'bg-indigo-600 text-white'
+                  ? 'bg-blue-600 text-white'
                   : 'glass text-gray-200'
               }`}
             >
@@ -212,7 +212,7 @@ export function ChatInterface({
           <div className="flex justify-start">
             <div className="max-w-[80%] glass rounded-lg p-3 text-sm text-gray-200 whitespace-pre-wrap">
               {streamingText}
-              <span className="inline-block w-1.5 h-4 bg-indigo-500 ml-0.5 animate-pulse align-text-bottom" />
+              <span className="inline-block w-1.5 h-4 bg-blue-500 ml-0.5 animate-pulse align-text-bottom" />
             </div>
           </div>
         )}
@@ -285,13 +285,13 @@ export function ChatInterface({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="답변을 입력하세요..."
-              className="flex-1 px-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm text-white placeholder-gray-500"
+              className="flex-1 px-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-white placeholder-gray-500"
               disabled={isLoading || isFinalizing}
             />
             <button
               type="submit"
               disabled={!input.trim() || isLoading || isFinalizing}
-              className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-violet-500 text-white rounded-lg hover:from-indigo-600 hover:to-violet-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-all"
+              className="px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-lg hover:from-blue-700 hover:to-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-all"
             >
               전송
             </button>

@@ -74,7 +74,7 @@ export function DeepReportViewer({ projectId, reportId, meta, sections, mergedCo
           </a>
           <a
             href={downloadUrl('pdf')}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
           >
             <DownloadIcon />
             PDF
@@ -94,7 +94,7 @@ export function DeepReportViewer({ projectId, reportId, meta, sections, mergedCo
                   onClick={() => handleSelectSection(s.id)}
                   className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
                     !showAll && selectedId === s.id
-                      ? 'bg-indigo-500/20 text-indigo-300 font-medium'
+                      ? 'bg-blue-500/20 text-blue-300 font-medium'
                       : 'text-gray-400 hover:bg-white/5'
                   }`}
                 >
@@ -117,7 +117,7 @@ export function DeepReportViewer({ projectId, reportId, meta, sections, mergedCo
               onClick={handleShowAll}
               className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
                 showAll
-                  ? 'bg-indigo-500/20 text-indigo-300 font-medium'
+                  ? 'bg-blue-500/20 text-blue-300 font-medium'
                   : 'text-gray-400 hover:bg-white/5'
               }`}
             >

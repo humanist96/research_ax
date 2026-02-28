@@ -47,13 +47,13 @@ export function CreateProjectForm() {
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           placeholder="리서치 주제를 입력하세요 (예: 반도체 시장 동향 분석)"
-          className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm text-white placeholder-gray-500"
+          className="flex-1 px-4 py-3 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-white placeholder-gray-500"
           disabled={isLoading}
         />
         <button
           type="submit"
           disabled={!prompt.trim() || isLoading}
-          className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-violet-500 text-white rounded-lg hover:from-indigo-600 hover:to-violet-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium whitespace-nowrap transition-all"
+          className="px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-lg hover:from-blue-700 hover:to-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium whitespace-nowrap transition-all"
         >
           {isLoading ? '생성 중...' : '시작'}
         </button>

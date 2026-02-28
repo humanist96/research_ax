@@ -18,7 +18,7 @@ export function Navigation() {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <a href="/" className="text-white font-bold text-xl">
-              <span className="gradient-text">Koscom AI Report</span>
+              <span className="gradient-text">Koscom <span className="text-[#d4a06e]">AI</span> Report</span>
             </a>
             {!isLanding && (
               <div className="ml-10 flex items-baseline space-x-1">

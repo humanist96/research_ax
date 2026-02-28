@@ -21,7 +21,7 @@ const DYNAMIC_COLORS = [
   'bg-yellow-500/20 text-yellow-300',
   'bg-purple-500/20 text-purple-300',
   'bg-pink-500/20 text-pink-300',
-  'bg-indigo-500/20 text-indigo-300',
+  'bg-blue-500/20 text-blue-300',
   'bg-teal-500/20 text-teal-300',
 ]
 
@@ -59,7 +59,7 @@ export function RecentNews({ articles, categoryLabels = {} }: RecentNewsProps) {
                   href={article.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm font-medium text-gray-200 hover:text-indigo-400 line-clamp-1 transition-colors"
+                  className="text-sm font-medium text-gray-200 hover:text-blue-400 line-clamp-1 transition-colors"
                 >
                   {article.title}
                 </a>

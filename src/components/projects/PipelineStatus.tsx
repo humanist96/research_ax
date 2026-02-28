@@ -197,7 +197,7 @@ export function PipelineStatus({ projectId, status, onStatusChange }: PipelineSt
         <button
           onClick={runPipeline}
           disabled={isRunning || isPipelineActive}
-          className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-violet-500 text-white rounded-lg hover:from-indigo-600 hover:to-violet-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-all"
+          className="px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-lg hover:from-blue-700 hover:to-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-all"
         >
           {isRunning || isPipelineActive ? '실행 중...' : '패스트 리서치 실행'}
         </button>
@@ -244,7 +244,7 @@ export function PipelineStatus({ projectId, status, onStatusChange }: PipelineSt
           </div>
           <div className="w-full bg-white/5 rounded-full h-2">
             <div
-              className="bg-gradient-to-r from-blue-500 to-violet-500 h-2 rounded-full transition-all duration-500"
+              className="bg-gradient-to-r from-blue-500 to-cyan-500 h-2 rounded-full transition-all duration-500"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
@@ -255,11 +255,11 @@ export function PipelineStatus({ projectId, status, onStatusChange }: PipelineSt
       {stats && (
         <div className="mt-4 flex gap-4">
           <div className="flex-1 bg-white/5 rounded-lg p-3 text-center">
-            <div className="text-lg font-bold text-indigo-400">{stats.articlesCollected}</div>
+            <div className="text-lg font-bold text-blue-400">{stats.articlesCollected}</div>
             <div className="text-xs text-gray-400">수집 기사</div>
           </div>
           <div className="flex-1 bg-white/5 rounded-lg p-3 text-center">
-            <div className="text-lg font-bold text-violet-400">{stats.articlesAnalyzed}</div>
+            <div className="text-lg font-bold text-cyan-400">{stats.articlesAnalyzed}</div>
             <div className="text-xs text-gray-400">분석 기사</div>
           </div>
           <div className="flex-1 bg-white/5 rounded-lg p-3 text-center">

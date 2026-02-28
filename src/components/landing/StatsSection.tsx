@@ -45,7 +45,7 @@ const STATS = [
   { label: 'Google News', value: 4, suffix: '개 소스', gradient: 'from-blue-500 to-cyan-400' },
   { label: 'Naver API', value: 100, suffix: '건+', gradient: 'from-green-500 to-emerald-400' },
   { label: 'Daum API', value: 100, suffix: '건+', gradient: 'from-yellow-500 to-orange-400' },
-  { label: 'RSS 피드', value: 20, suffix: '개+', gradient: 'from-violet-500 to-purple-400' },
+  { label: 'RSS 피드', value: 20, suffix: '개+', gradient: 'from-sky-500 to-blue-400' },
 ]
 
 export function StatsSection() {
@@ -78,7 +78,7 @@ function StatCard({ label, value, suffix, gradient }: { label: string; value: nu
     <AnimatedSection>
       <div ref={ref} className="glass rounded-xl p-6 text-center">
         <div className={`text-4xl font-bold bg-gradient-to-r ${gradient} bg-clip-text text-transparent mb-1`}>
-          {count}{suffix.startsWith('+') ? '' : ''}<span className="text-lg">{suffix}</span>
+          {count}{suffix.startsWith('+') ? '' : ''}<span className="text-lg text-[#d4a06e]">{suffix}</span>
         </div>
         <div className="text-gray-400 text-sm">{label}</div>
       </div>

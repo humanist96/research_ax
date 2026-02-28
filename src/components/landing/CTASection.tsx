@@ -15,7 +15,7 @@ export function CTASection() {
           </p>
           <a
             href="/projects"
-            className="inline-block px-8 py-3.5 bg-gradient-to-r from-indigo-500 to-violet-500 text-white rounded-xl font-semibold text-lg hover:from-indigo-600 hover:to-violet-600 transition-all shadow-lg shadow-indigo-500/25"
+            className="inline-block px-8 py-3.5 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-cyan-600 transition-all shadow-lg shadow-blue-500/25"
           >
             리서치 시작하기
           </a>

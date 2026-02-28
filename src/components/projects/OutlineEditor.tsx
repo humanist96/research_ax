@@ -113,7 +113,7 @@ function SectionCard({
               <span className="text-gray-500 text-xs">검색 쿼리:</span>
               <div className="flex flex-wrap gap-1 mt-1">
                 {section.searchQueries.map((q) => (
-                  <span key={q} className="px-2 py-0.5 bg-indigo-500/10 text-indigo-400 rounded text-xs">
+                  <span key={q} className="px-2 py-0.5 bg-blue-500/10 text-blue-400 rounded text-xs">
                     {q}
                   </span>
                 ))}
@@ -164,7 +164,7 @@ function AddSectionForm({
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="섹션 제목"
-        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         autoFocus
       />
       <textarea
@@ -172,7 +172,7 @@ function AddSectionForm({
         onChange={(e) => setDescription(e.target.value)}
         placeholder="섹션 설명 (선택사항)"
         rows={2}
-        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none"
+        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
       />
       <div className="flex gap-2 justify-end">
         <button
@@ -185,7 +185,7 @@ function AddSectionForm({
         <button
           type="submit"
           disabled={!title.trim()}
-          className="px-3 py-1.5 text-sm bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="px-3 py-1.5 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           추가
         </button>
@@ -356,7 +356,7 @@ export function OutlineEditor({
               type="checkbox"
               checked={enableArticleReview}
               onChange={(e) => setEnableArticleReview(e.target.checked)}
-              className="w-4 h-4 rounded border-white/20 bg-white/5 text-indigo-500 focus:ring-indigo-500 focus:ring-offset-0 cursor-pointer"
+              className="w-4 h-4 rounded border-white/20 bg-white/5 text-blue-500 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer"
             />
             <span className="text-sm text-gray-300">기사 검열 활성화</span>
           </label>
@@ -365,7 +365,7 @@ export function OutlineEditor({
 
         <div>
           <label className="block text-sm text-gray-300 mb-1.5">키워드 블랙리스트</label>
-          <div className="flex flex-wrap items-center gap-1.5 min-h-[38px] bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5 focus-within:ring-1 focus-within:ring-indigo-500">
+          <div className="flex flex-wrap items-center gap-1.5 min-h-[38px] bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5 focus-within:ring-1 focus-within:ring-blue-500">
             {blacklistTags.map((tag) => (
               <span
                 key={tag}
@@ -398,7 +398,7 @@ export function OutlineEditor({
         <button
           onClick={handleStartResearch}
           disabled={sections.length === 0}
-          className="px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-violet-500 text-white rounded-lg hover:from-indigo-600 hover:to-violet-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-all"
+          className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-lg hover:from-blue-700 hover:to-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-all"
         >
           리서치 시작
         </button>

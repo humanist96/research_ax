@@ -5,8 +5,8 @@
   --color-surface-900: #0b1120;
   --color-surface-800: #111827;
   --color-surface-700: #1e293b;
-  --color-accent-indigo: #6366f1;
-  --color-accent-violet: #8b5cf6;
+  --color-accent-blue: #2563eb;
+  --color-accent-sky: #0ea5e9;
   --color-accent-cyan: #22d3ee;
 }
 
@@ -38,7 +38,7 @@ body {
 
 /* Gradient text */
 .gradient-text {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6, #22d3ee);
+  background: linear-gradient(135deg, #2563eb, #0ea5e9, #22d3ee);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;

@@ -34,10 +34,10 @@ function AnimatedIcosahedron({ position, color, speed }: { position: [number, nu
 
 function SceneContent() {
   const shapes = useMemo(() => [
-    { position: [-4, 2, -5] as [number, number, number], color: '#6366f1', speed: 0.5 },
-    { position: [4, -1, -3] as [number, number, number], color: '#8b5cf6', speed: 0.7 },
+    { position: [-4, 2, -5] as [number, number, number], color: '#2563eb', speed: 0.5 },
+    { position: [4, -1, -3] as [number, number, number], color: '#0ea5e9', speed: 0.7 },
     { position: [0, 3, -8] as [number, number, number], color: '#22d3ee', speed: 0.4 },
-    { position: [-3, -3, -6] as [number, number, number], color: '#6366f1', speed: 0.6 },
+    { position: [-3, -3, -6] as [number, number, number], color: '#2563eb', speed: 0.6 },
   ], [])
 
   return (
@@ -59,7 +59,7 @@ export function Scene3D() {
       <div
         className="fixed inset-0 -z-20"
         style={{
-          background: 'radial-gradient(ellipse at 30% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%), #0b1120',
+          background: 'radial-gradient(ellipse at 30% 20%, rgba(37, 99, 235, 0.15) 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(14, 165, 233, 0.1) 0%, transparent 50%), #0b1120',
         }}
       />
       {/* 3D canvas (hidden on mobile for performance) */}

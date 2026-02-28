@@ -68,7 +68,7 @@ export function NewsCard({
         href={article.url}
         target="_blank"
         rel="noopener noreferrer"
-        className="block text-sm font-medium text-gray-200 hover:text-indigo-400 mb-2 line-clamp-2 transition-colors"
+        className="block text-sm font-medium text-gray-200 hover:text-blue-400 mb-2 line-clamp-2 transition-colors"
       >
         {article.title}
       </a>

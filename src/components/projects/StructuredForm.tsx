@@ -156,10 +156,10 @@ export function StructuredForm({ data, onSubmit, disabled }: StructuredFormProps
                     disabled={disabled}
                     className={`relative px-3 py-1.5 rounded-full text-sm border transition-colors ${
                       selected
-                        ? 'bg-indigo-600 text-white border-indigo-600'
+                        ? 'bg-blue-600 text-white border-blue-600'
                         : recommended
                           ? 'bg-white/5 text-gray-300 border-amber-500/50 ring-1 ring-amber-500/30'
-                          : 'bg-white/5 text-gray-300 border-white/10 hover:border-indigo-500/50'
+                          : 'bg-white/5 text-gray-300 border-white/10 hover:border-blue-500/50'
                     } disabled:opacity-50`}
                   >
                     {opt}
@@ -186,10 +186,10 @@ export function StructuredForm({ data, onSubmit, disabled }: StructuredFormProps
                       disabled={disabled}
                       className={`relative px-3 py-1.5 rounded-full text-sm border transition-colors ${
                         selected
-                          ? 'bg-indigo-600 text-white border-indigo-600'
+                          ? 'bg-blue-600 text-white border-blue-600'
                           : recommended
                             ? 'bg-white/5 text-gray-300 border-amber-500/50 ring-1 ring-amber-500/30'
-                            : 'bg-white/5 text-gray-300 border-white/10 hover:border-indigo-500/50'
+                            : 'bg-white/5 text-gray-300 border-white/10 hover:border-blue-500/50'
                       } disabled:opacity-50`}
                     >
                       {selected ? '✓ ' : ''}{opt}
@@ -207,7 +207,7 @@ export function StructuredForm({ data, onSubmit, disabled }: StructuredFormProps
                   onChange={(e) => handleCustomInputChange(q.id, e.target.value)}
                   placeholder="직접 입력..."
                   disabled={disabled}
-                  className="w-full px-3 py-1.5 text-sm bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white placeholder-gray-500"
+                  className="w-full px-3 py-1.5 text-sm bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-500"
                 />
               )}
             </div>
@@ -223,7 +223,7 @@ export function StructuredForm({ data, onSubmit, disabled }: StructuredFormProps
                   typeof q.recommended === 'string' ? `추천: ${q.recommended}` : '입력하세요...'
                 }
                 disabled={disabled}
-                className="w-full px-3 py-1.5 text-sm bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white placeholder-gray-500"
+                className="w-full px-3 py-1.5 text-sm bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-500"
               />
             </div>
           )}
@@ -240,7 +240,7 @@ export function StructuredForm({ data, onSubmit, disabled }: StructuredFormProps
         type="button"
         onClick={handleSubmit}
         disabled={disabled || !isComplete}
-        className="w-full py-2 bg-gradient-to-r from-indigo-500 to-violet-500 text-white rounded-lg hover:from-indigo-600 hover:to-violet-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-all"
+        className="w-full py-2 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-lg hover:from-blue-700 hover:to-cyan-600 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-all"
       >
         답변 제출
       </button>

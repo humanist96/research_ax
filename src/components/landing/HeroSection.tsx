@@ -18,7 +18,16 @@ export function HeroSection() {
         </motion.div>
 
         <motion.p
-          className="mt-6 text-lg sm:text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed"
+          className="mt-4 text-xs font-semibold tracking-wider uppercase text-[#d4a06e]"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.15 }}
+        >
+          Financial Research Intelligence
+        </motion.p>
+
+        <motion.p
+          className="mt-4 text-lg sm:text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
@@ -35,7 +44,7 @@ export function HeroSection() {
         >
           <a
             href="/projects"
-            className="px-8 py-3.5 bg-gradient-to-r from-indigo-500 to-violet-500 text-white rounded-xl font-semibold text-lg hover:from-indigo-600 hover:to-violet-600 transition-all shadow-lg shadow-indigo-500/25"
+            className="px-8 py-3.5 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-cyan-600 transition-all shadow-lg shadow-blue-500/25"
           >
             리서치 시작하기
           </a>

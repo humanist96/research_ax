@@ -41,7 +41,7 @@ export function ReportList({ projectId, reports, reportContents, categoryLabels 
                   <div>
                     <div className="flex items-center gap-2">
                       <h3 className="font-semibold text-white">{report.title}</h3>
-                      <span className="text-xs bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full font-medium">
+                      <span className="text-xs bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full font-medium">
                         딥 리서치
                       </span>
                     </div>
@@ -51,7 +51,7 @@ export function ReportList({ projectId, reports, reportContents, categoryLabels 
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="text-right">
-                      <div className="text-2xl font-bold text-indigo-400">{report.totalArticles}</div>
+                      <div className="text-2xl font-bold text-blue-400">{report.totalArticles}</div>
                       <div className="text-xs text-gray-500">소스</div>
                     </div>
                     <span className="text-gray-500 text-xl">&rarr;</span>

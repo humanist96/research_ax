@@ -71,12 +71,12 @@ export function NewsFilter({
           placeholder="기사 검색..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="flex-1 px-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white placeholder-gray-500"
+          className="flex-1 px-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-500"
         />
         <select
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
-          className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white"
+          className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
         >
           <option value="all">전체 카테고리</option>
           {uniqueCategories.map((cat) => (
@@ -90,7 +90,7 @@ export function NewsFilter({
             onClick={onToggleReviewMode}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               isReviewMode
-                ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/50'
+                ? 'bg-blue-500/20 text-blue-300 border border-blue-500/50'
                 : 'bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10'
             }`}
           >

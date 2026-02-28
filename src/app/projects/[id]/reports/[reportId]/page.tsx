@@ -66,7 +66,7 @@ export default function DeepReportPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center py-12">
           <p className="text-red-400">{error ?? '보고서를 찾을 수 없습니다'}</p>
-          <a href={`/projects/${projectId}/reports`} className="text-sm text-indigo-400 hover:underline mt-2 inline-block">
+          <a href={`/projects/${projectId}/reports`} className="text-sm text-blue-400 hover:underline mt-2 inline-block">
             리포트 목록으로 돌아가기
           </a>
         </div>
