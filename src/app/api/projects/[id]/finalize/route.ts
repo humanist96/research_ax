@@ -26,7 +26,7 @@ export async function POST(
     setProjectStatus(id, 'configuring')
 
     try {
-      const config = generateConfig(project.prompt, project.conversation)
+      const config = await generateConfig(project.prompt, project.conversation)
       const updated = setProjectConfig(id, config)
       return NextResponse.json({ success: true, data: updated })
     } catch (error) {

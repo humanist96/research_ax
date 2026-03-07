@@ -4,9 +4,17 @@ import * as crypto from 'crypto'
 import type { ResearchProject, ProjectStatus, ConversationTurn, ProjectConfig } from '@/types'
 import type { ReportIndex, Article, AnalyzedArticle, CollectionLog } from '@/types'
 import type { DeepReportMeta } from '@/lib/deep-research/types'
+import { getStorage } from '@/lib/storage'
 
+// Legacy filesystem paths (used only by STORAGE_BACKEND=local for backward compat)
 const DATA_DIR = path.resolve(process.cwd(), 'data')
 const PROJECTS_DIR = path.join(DATA_DIR, 'projects')
+
+function useStorageAdapter(): boolean {
+  return process.env.STORAGE_BACKEND === 'vercel'
+}
+
+// --- Legacy filesystem helpers (kept for local mode) ---
 
 function projectDir(id: string): string {
   return path.join(PROJECTS_DIR, id)
@@ -40,6 +48,278 @@ function generateId(): string {
 function sanitize(name: string): string {
   return name.replace(/[^a-zA-Z0-9-]/g, '')
 }
+
+// --- Async storage-backed functions ---
+
+export async function listProjectsAsync(): Promise<ResearchProject[]> {
+  if (useStorageAdapter()) {
+    const storage = getStorage()
+    const keys = await storage.listKeys('project')
+    const projects: ResearchProject[] = []
+    for (const key of keys) {
+      const project = await storage.getJSON<ResearchProject | null>(key, null)
+      if (project) projects.push(project)
+    }
+    return projects.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+  }
+  return listProjects()
+}
+
+export async function getProjectAsync(id: string): Promise<ResearchProject | null> {
+  if (useStorageAdapter()) {
+    return getStorage().getJSON<ResearchProject | null>(`project:${id}`, null)
+  }
+  return getProject(id)
+}
+
+export async function createProjectAsync(name: string, prompt: string): Promise<ResearchProject> {
+  const id = generateId()
+  const now = new Date().toISOString()
+
+  const project: ResearchProject = {
+    id,
+    name,
+    prompt,
+    conversation: [],
+    status: 'conversation',
+    config: null,
+    createdAt: now,
+    updatedAt: now,
+  }
+
+  if (useStorageAdapter()) {
+    await getStorage().setJSON(`project:${id}`, project)
+  } else {
+    ensureDir(projectDir(id))
+    ensureDir(path.join(projectDir(id), 'reports'))
+    writeJson(projectPath(id), project)
+  }
+
+  return project
+}
+
+export async function updateProjectAsync(
+  id: string,
+  updates: Partial<Pick<ResearchProject, 'name' | 'status' | 'config' | 'conversation'>>,
+): Promise<ResearchProject | null> {
+  const project = await getProjectAsync(id)
+  if (!project) return null
+
+  const updated: ResearchProject = {
+    ...project,
+    ...updates,
+    updatedAt: new Date().toISOString(),
+  }
+
+  if (useStorageAdapter()) {
+    await getStorage().setJSON(`project:${id}`, updated)
+  } else {
+    writeJson(projectPath(id), updated)
+  }
+
+  return updated
+}
+
+export async function addConversationTurnAsync(id: string, turn: ConversationTurn): Promise<ResearchProject | null> {
+  const project = await getProjectAsync(id)
+  if (!project) return null
+  return updateProjectAsync(id, { conversation: [...project.conversation, turn] })
+}
+
+export async function setProjectStatusAsync(id: string, status: ProjectStatus): Promise<ResearchProject | null> {
+  return updateProjectAsync(id, { status })
+}
+
+export async function setProjectConfigAsync(id: string, config: ProjectConfig): Promise<ResearchProject | null> {
+  return updateProjectAsync(id, { config, status: 'ready' })
+}
+
+export async function deleteProjectAsync(id: string): Promise<boolean> {
+  if (useStorageAdapter()) {
+    const storage = getStorage()
+    await storage.deleteKey(`project:${id}`)
+    await storage.deleteKey(`project:${id}:excluded`)
+    await storage.deleteKey(`project:${id}:collection-log`)
+    await storage.deleteKey(`project:${id}:reports:index`)
+    // Delete blobs
+    const blobs = await storage.listBlobs(`projects/${id}`)
+    for (const blob of blobs) {
+      await storage.deleteBlob(blob)
+    }
+    return true
+  }
+  return deleteProject(id)
+}
+
+export async function getProjectArticlesAsync(id: string): Promise<Article[]> {
+  if (useStorageAdapter()) {
+    const text = await getStorage().getBlobText(`projects/${id}/articles.json`)
+    return text ? JSON.parse(text) : []
+  }
+  return getProjectArticles(id)
+}
+
+export async function saveProjectArticlesAsync(id: string, articles: Article[]): Promise<void> {
+  if (useStorageAdapter()) {
+    await getStorage().putBlob(`projects/${id}/articles.json`, JSON.stringify(articles, null, 2))
+  } else {
+    saveProjectArticles(id, articles)
+  }
+}
+
+export async function getProjectAnalyzedArticlesAsync(id: string): Promise<AnalyzedArticle[]> {
+  if (useStorageAdapter()) {
+    const text = await getStorage().getBlobText(`projects/${id}/analyzed-articles.json`)
+    return text ? JSON.parse(text) : []
+  }
+  return getProjectAnalyzedArticles(id)
+}
+
+export async function saveProjectAnalyzedArticlesAsync(id: string, articles: AnalyzedArticle[]): Promise<void> {
+  if (useStorageAdapter()) {
+    await getStorage().putBlob(`projects/${id}/analyzed-articles.json`, JSON.stringify(articles, null, 2))
+  } else {
+    saveProjectAnalyzedArticles(id, articles)
+  }
+}
+
+export async function getExcludedArticleIdsAsync(id: string): Promise<string[]> {
+  if (useStorageAdapter()) {
+    return getStorage().getJSON<string[]>(`project:${id}:excluded`, [])
+  }
+  return getExcludedArticleIds(id)
+}
+
+export async function saveExcludedArticleIdsAsync(id: string, ids: readonly string[]): Promise<void> {
+  if (useStorageAdapter()) {
+    await getStorage().setJSON(`project:${id}:excluded`, ids)
+  } else {
+    saveExcludedArticleIds(id, ids)
+  }
+}
+
+export async function getProjectCollectionLogAsync(id: string): Promise<CollectionLog[]> {
+  if (useStorageAdapter()) {
+    return getStorage().getJSON<CollectionLog[]>(`project:${id}:collection-log`, [])
+  }
+  return getProjectCollectionLog(id)
+}
+
+export async function saveProjectCollectionLogAsync(id: string, logs: CollectionLog[]): Promise<void> {
+  if (useStorageAdapter()) {
+    await getStorage().setJSON(`project:${id}:collection-log`, logs)
+  } else {
+    saveProjectCollectionLog(id, logs)
+  }
+}
+
+export async function getProjectReportIndexAsync(id: string): Promise<ReportIndex> {
+  if (useStorageAdapter()) {
+    return getStorage().getJSON<ReportIndex>(`project:${id}:reports:index`, { reports: [] })
+  }
+  return getProjectReportIndex(id)
+}
+
+export async function saveProjectReportIndexAsync(id: string, index: ReportIndex): Promise<void> {
+  if (useStorageAdapter()) {
+    await getStorage().setJSON(`project:${id}:reports:index`, index)
+  } else {
+    saveProjectReportIndex(id, index)
+  }
+}
+
+export async function getProjectReportContentAsync(projectId: string, reportId: string): Promise<string | null> {
+  if (useStorageAdapter()) {
+    return getStorage().getBlobText(`projects/${projectId}/reports/${sanitize(reportId)}.md`)
+  }
+  return getProjectReportContent(projectId, reportId)
+}
+
+export async function saveProjectReportAsync(projectId: string, reportId: string, content: string): Promise<void> {
+  if (useStorageAdapter()) {
+    await getStorage().putBlob(`projects/${projectId}/reports/${sanitize(reportId)}.md`, content)
+  } else {
+    saveProjectReport(projectId, reportId, content)
+  }
+}
+
+export async function saveDeepReportMetaAsync(projectId: string, reportId: string, meta: DeepReportMeta): Promise<void> {
+  if (useStorageAdapter()) {
+    await getStorage().setJSON(`project:${projectId}:deep:${reportId}:meta`, meta)
+  } else {
+    saveDeepReportMeta(projectId, reportId, meta)
+  }
+}
+
+export async function getDeepReportMetaAsync(projectId: string, reportId: string): Promise<DeepReportMeta | null> {
+  if (useStorageAdapter()) {
+    return getStorage().getJSON<DeepReportMeta | null>(`project:${projectId}:deep:${reportId}:meta`, null)
+  }
+  return getDeepReportMeta(projectId, reportId)
+}
+
+export async function getLatestDeepReportMetaAsync(projectId: string): Promise<DeepReportMeta | null> {
+  if (useStorageAdapter()) {
+    const storage = getStorage()
+    const keys = await storage.listKeys(`project:${projectId}:deep`)
+    const metaKeys = keys.filter((k) => k.endsWith(':meta'))
+    let latest: DeepReportMeta | null = null
+    for (const key of metaKeys) {
+      const meta = await storage.getJSON<DeepReportMeta | null>(key, null)
+      if (meta && (!latest || meta.generatedAt > latest.generatedAt)) {
+        latest = meta
+      }
+    }
+    return latest
+  }
+  return getLatestDeepReportMeta(projectId)
+}
+
+export async function saveDeepReportSectionAsync(projectId: string, reportId: string, sectionId: string, content: string): Promise<void> {
+  if (useStorageAdapter()) {
+    await getStorage().putBlob(`projects/${projectId}/reports/deep-${sanitize(reportId)}/sections/${sanitize(sectionId)}.md`, content)
+  } else {
+    saveDeepReportSection(projectId, reportId, sectionId, content)
+  }
+}
+
+export async function getDeepReportSectionAsync(projectId: string, reportId: string, sectionId: string): Promise<string | null> {
+  if (useStorageAdapter()) {
+    return getStorage().getBlobText(`projects/${projectId}/reports/deep-${sanitize(reportId)}/sections/${sanitize(sectionId)}.md`)
+  }
+  return getDeepReportSection(projectId, reportId, sectionId)
+}
+
+export async function listDeepReportSectionsAsync(projectId: string, reportId: string): Promise<string[]> {
+  if (useStorageAdapter()) {
+    const blobs = await getStorage().listBlobs(`projects/${projectId}/reports/deep-${sanitize(reportId)}/sections`)
+    return blobs
+      .filter((b) => b.endsWith('.md'))
+      .map((b) => b.split('/').pop()!.replace('.md', ''))
+  }
+  return listDeepReportSections(projectId, reportId)
+}
+
+export async function saveDeepReportMergedAsync(projectId: string, reportId: string, format: 'md' | 'pdf', content: Buffer | string): Promise<void> {
+  if (useStorageAdapter()) {
+    const filename = format === 'md' ? 'merged.md' : 'merged.pdf'
+    await getStorage().putBlob(`projects/${projectId}/reports/deep-${sanitize(reportId)}/${filename}`, content)
+  } else {
+    saveDeepReportMerged(projectId, reportId, format, content)
+  }
+}
+
+export async function getDeepReportMergedAsync(projectId: string, reportId: string, format: 'md' | 'pdf'): Promise<Buffer | string | null> {
+  if (useStorageAdapter()) {
+    const storage = getStorage()
+    const filename = format === 'md' ? 'merged.md' : 'merged.pdf'
+    const blobPath = `projects/${projectId}/reports/deep-${sanitize(reportId)}/${filename}`
+    return format === 'md' ? storage.getBlobText(blobPath) : storage.getBlob(blobPath)
+  }
+  return getDeepReportMerged(projectId, reportId, format)
+}
+
+// --- Synchronous functions (kept for backward compatibility in local mode) ---
 
 export function listProjects(): ResearchProject[] {
   ensureDir(PROJECTS_DIR)

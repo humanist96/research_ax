@@ -1,5 +1,4 @@
 import { marked } from 'marked'
-import puppeteer from 'puppeteer'
 
 const CSS_TEMPLATE = `
 @page {
@@ -205,7 +204,15 @@ function transformMermaidBlocks(html: string): string {
   )
 }
 
-function buildHtml(markdown: string, title: string): string {
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+export function buildReportHtml(markdown: string, title: string): string {
   const rawHtml = marked.parse(markdown, { async: false }) as string
   const bodyHtml = transformMermaidBlocks(rawHtml)
   const hasMermaid = bodyHtml.includes('class="mermaid"')
@@ -238,18 +245,23 @@ function buildHtml(markdown: string, title: string): string {
 </html>`
 }
 
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-}
-
+/**
+ * Server-side PDF generation using Puppeteer.
+ * Only available in local/non-Vercel environments where Puppeteer is installed.
+ * On Vercel, PDF generation is handled client-side via html2pdf.js.
+ */
 export async function generatePDF(markdown: string, title: string): Promise<Buffer> {
-  const html = buildHtml(markdown, title)
+  // Dynamic import to avoid bundling Puppeteer in Vercel
+  let puppeteer: typeof import('puppeteer')
+  try {
+    puppeteer = await import('puppeteer')
+  } catch {
+    throw new Error('PDF generation is not available in this environment. Use client-side PDF generation instead.')
+  }
 
-  const browser = await puppeteer.launch({
+  const html = buildReportHtml(markdown, title)
+
+  const browser = await puppeteer.default.launch({
     headless: true,
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
   })

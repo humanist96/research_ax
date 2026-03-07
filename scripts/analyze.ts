@@ -1,6 +1,5 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { execSync } from 'child_process'
 import { buildCategorizationPrompt, parseCategorizationResult } from '../src/lib/analyzer/categorizer'
 import { buildSummarizationPrompt, parseSummarizationResult } from '../src/lib/analyzer/summarizer'
 import {
@@ -10,6 +9,7 @@ import {
   getExcludedArticleIds,
   saveProjectAnalyzedArticles,
 } from '../src/lib/project/store'
+import { callAI } from '../src/lib/ai'
 import type { Article, AnalyzedArticle } from '../src/types'
 
 const DATA_DIR = path.resolve(__dirname, '..', 'data')
@@ -32,28 +32,6 @@ function loadAnalyzed(): AnalyzedArticle[] {
     return JSON.parse(fs.readFileSync(ANALYZED_PATH, 'utf-8'))
   } catch {
     return []
-  }
-}
-
-function callClaude(prompt: string): string {
-  try {
-    const escaped = prompt.replace(/'/g, "'\\''")
-    const env = { ...process.env }
-    delete env.CLAUDECODE
-    const result = execSync(
-      `echo '${escaped}' | claude --print`,
-      {
-        encoding: 'utf-8',
-        timeout: 120000,
-        maxBuffer: 10 * 1024 * 1024,
-        env,
-      }
-    )
-    return result.trim()
-  } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error)
-    console.error(`[Analyze] Claude CLI call failed: ${msg}`)
-    return ''
   }
 }
 
@@ -109,12 +87,12 @@ async function analyzeForProject(projectId: string) {
 
     console.log('[Analyze] Categorizing...')
     const catPrompt = buildCategorizationPrompt(batch, config.categories, config.domainContext)
-    const catResult = callClaude(catPrompt)
+    const catResult = await callAI(catPrompt, { model: 'general' })
     const categories = parseCategorizationResult(catResult, validCategoryIds)
 
     console.log('[Analyze] Summarizing...')
     const sumPrompt = buildSummarizationPrompt(batch, config.domainContext)
-    const sumResult = callClaude(sumPrompt)
+    const sumResult = await callAI(sumPrompt, { model: 'general' })
     const summaries = parseSummarizationResult(sumResult)
 
     for (const article of batch) {
@@ -159,12 +137,12 @@ async function analyzeDefault() {
 
     console.log('[Analyze] Categorizing...')
     const catPrompt = buildCategorizationPrompt(batch)
-    const catResult = callClaude(catPrompt)
+    const catResult = await callAI(catPrompt, { model: 'general' })
     const categories = parseCategorizationResult(catResult)
 
     console.log('[Analyze] Summarizing...')
     const sumPrompt = buildSummarizationPrompt(batch)
-    const sumResult = callClaude(sumPrompt)
+    const sumResult = await callAI(sumPrompt, { model: 'general' })
     const summaries = parseSummarizationResult(sumResult)
 
     for (const article of batch) {

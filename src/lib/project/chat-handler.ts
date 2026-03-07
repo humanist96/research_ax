@@ -1,5 +1,5 @@
-import { spawn } from 'child_process'
 import type { ConversationTurn } from '@/types'
+import { streamAI } from '@/lib/ai'
 
 const SYSTEM_PROMPT = `당신은 사용자의 리서치 파트너입니다. 사용자가 조사하고 싶은 주제에 대해 구조화된 질문을 통해 뉴스 수집·분석에 필요한 범위를 구체화합니다.
 
@@ -96,45 +96,28 @@ export function buildConversationPrompt(
   return parts.join('\n')
 }
 
-export function streamClaudeResponse(
+export async function streamChatResponse(
   prompt: string,
   onData: (chunk: string) => void,
   onEnd: (fullText: string) => void,
   onError: (error: Error) => void
-): void {
-  const env = { ...process.env }
-  delete env.CLAUDECODE
+): Promise<void> {
+  try {
+    const generator = streamAI(prompt, { model: 'general' })
+    let fullText = ''
 
-  const child = spawn('claude', ['--print'], {
-    env,
-    stdio: ['pipe', 'pipe', 'pipe'],
-  })
-
-  let fullText = ''
-  let stderrText = ''
-
-  child.stdout.on('data', (data: Buffer) => {
-    const chunk = data.toString('utf-8')
-    fullText += chunk
-    onData(chunk)
-  })
-
-  child.stderr.on('data', (data: Buffer) => {
-    stderrText += data.toString('utf-8')
-  })
-
-  child.on('close', (code) => {
-    if (code !== 0) {
-      onError(new Error(`Claude CLI exited with code ${code}: ${stderrText}`))
-      return
+    while (true) {
+      const { value, done } = await generator.next()
+      if (done) {
+        fullText = value ?? fullText
+        break
+      }
+      fullText += value
+      onData(value)
     }
+
     onEnd(fullText.trim())
-  })
-
-  child.on('error', (err) => {
-    onError(err)
-  })
-
-  child.stdin.write(prompt)
-  child.stdin.end()
+  } catch (error) {
+    onError(error instanceof Error ? error : new Error(String(error)))
+  }
 }

@@ -1,5 +1,6 @@
 import type { RssSource } from './index'
 import type { CollectionSourceConfig } from '@/lib/collector/types'
+import type { AIModelConfig } from '@/lib/ai/config'
 
 export interface ResearchProject {
   readonly id: string
@@ -51,6 +52,7 @@ export interface ProjectConfig {
   readonly maxArticlesPerSource?: number
   readonly maxArticlesForAnalysis?: number
   readonly keywordBlacklist?: readonly string[]
+  readonly aiModel?: Partial<AIModelConfig>
 }
 
 export interface CategoryDefinition {

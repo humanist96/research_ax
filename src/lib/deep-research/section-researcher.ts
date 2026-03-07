@@ -1,7 +1,7 @@
 import type { ProjectConfig } from '@/types'
 import type { OutlineSection, SectionResearchResult, SourceReference } from './types'
 import { searchForSection } from '@/lib/collector/aggregator'
-import { callClaudeAsync } from './claude-async'
+import { callAI } from '@/lib/ai'
 import { filterRelevantArticles } from './relevance-filter'
 import { filterByKeywordBlacklist } from './keyword-filter'
 
@@ -306,13 +306,13 @@ export async function analyzeSection(
 
   // Step 2: Initial analysis (Opus)
   const analysisPrompt = buildSectionAnalysisPrompt(section, articles, config)
-  const initialContent = await callClaudeAsync(analysisPrompt, { model: 'opus', maxTokens: 8192 })
+  const initialContent = await callAI(analysisPrompt, { model: 'reasoning', maxTokens: 8192 })
 
   // Step 3: Gap detection + follow-up search (Sonnet)
   onProgress?.('deepening', '갭 탐지 및 심화 검색 중...')
 
   const gapPrompt = buildGapDetectionPrompt(section, initialContent, config)
-  const gapRaw = await callClaudeAsync(gapPrompt, { model: 'opus', maxTokens: 4096 })
+  const gapRaw = await callAI(gapPrompt, { model: 'reasoning', maxTokens: 4096 })
   const gapResult = parseGapDetectionResult(gapRaw)
 
   let allArticles: readonly ArticleItem[] = articles
@@ -343,7 +343,7 @@ export async function analyzeSection(
         gapResult.gaps,
         config,
       )
-      integratedContent = await callClaudeAsync(integratedPrompt, { model: 'opus', maxTokens: 8192 })
+      integratedContent = await callAI(integratedPrompt, { model: 'reasoning', maxTokens: 8192 })
     }
   }
 
@@ -351,7 +351,7 @@ export async function analyzeSection(
   onProgress?.('refining', '자기비평 및 품질 개선 중...')
 
   const critiquePrompt = buildCritiqueAndRefinePrompt(section, integratedContent, config)
-  const refinedContent = await callClaudeAsync(critiquePrompt, { model: 'opus', maxTokens: 8192 })
+  const refinedContent = await callAI(critiquePrompt, { model: 'reasoning', maxTokens: 8192 })
 
   // Step 5: Build source references
   const sources: SourceReference[] = allArticles.map((a) => ({

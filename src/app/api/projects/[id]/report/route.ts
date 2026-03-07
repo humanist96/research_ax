@@ -1,6 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { execSync } from 'child_process'
-import { getProject, setProjectStatus } from '@/lib/project/store'
+import {
+  getProject,
+  setProjectStatus,
+  getProjectAnalyzedArticles,
+  getExcludedArticleIds,
+  getProjectReportIndex,
+  saveProjectReportIndex,
+  saveProjectReport,
+} from '@/lib/project/store'
+import { buildDynamicReport, buildReportMeta } from '@/lib/report/markdown-builder'
+import type { AnalyzedArticle, ReportIndex } from '@/types'
+
+function getDateRange(): { readonly startDate: string; readonly endDate: string } {
+  const now = new Date()
+  const endDate = now.toISOString().split('T')[0]
+  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+  const startDate = weekAgo.toISOString().split('T')[0]
+  return { startDate, endDate }
+}
+
+function filterByDateRange(
+  articles: readonly AnalyzedArticle[],
+  startDate: string,
+  endDate: string
+): readonly AnalyzedArticle[] {
+  const rangeArticles = articles.filter((a) => {
+    const date = a.publishedAt.split('T')[0]
+    return date >= startDate && date <= endDate
+  })
+  return rangeArticles.length > 0 ? rangeArticles : articles
+}
 
 export async function POST(
   _request: NextRequest,
@@ -23,13 +52,41 @@ export async function POST(
       )
     }
 
+    const config = project.config
+
     try {
       setProjectStatus(id, 'reporting')
-      execSync(`tsx scripts/generate-report.ts --project-id ${id}`, {
-        cwd: process.cwd(),
-        timeout: 300000,
-        stdio: 'pipe',
-      })
+
+      const excludedIds = new Set(getExcludedArticleIds(id))
+      const allArticles = getProjectAnalyzedArticles(id).filter((a) => !excludedIds.has(a.id))
+      const { startDate, endDate } = getDateRange()
+      const articles = filterByDateRange(allArticles, startDate, endDate)
+
+      const markdown = buildDynamicReport(articles as AnalyzedArticle[], startDate, endDate, config.categories, config.reportTitle)
+      saveProjectReport(id, endDate, markdown)
+
+      const meta = buildReportMeta(
+        articles as AnalyzedArticle[],
+        startDate,
+        endDate,
+        `${config.reportTitle} (${startDate} ~ ${endDate})`
+      )
+      const index = getProjectReportIndex(id)
+      const existingIdx = index.reports.findIndex((r) => r.id === meta.id)
+
+      const updatedReports =
+        existingIdx >= 0
+          ? index.reports.map((r, i) => (i === existingIdx ? meta : r))
+          : [...index.reports, meta]
+
+      const updatedIndex: ReportIndex = {
+        reports: [...updatedReports].sort(
+          (a, b) => new Date(b.endDate).getTime() - new Date(a.endDate).getTime()
+        ),
+      }
+
+      saveProjectReportIndex(id, updatedIndex)
+
       setProjectStatus(id, 'complete')
       const updated = getProject(id)
       return NextResponse.json({ success: true, data: updated })

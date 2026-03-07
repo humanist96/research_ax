@@ -1,32 +1,11 @@
-import { execSync } from 'child_process'
 import type { ConversationTurn, ProjectConfig } from '@/types'
 import { RSS_SOURCES } from '@/lib/config/sources'
+import { callAI } from '@/lib/ai'
 
-function callClaude(prompt: string): string {
-  try {
-    const escaped = prompt.replace(/'/g, "'\\''")
-    const env = { ...process.env }
-    delete env.CLAUDECODE
-    const result = execSync(
-      `echo '${escaped}' | claude --print`,
-      {
-        encoding: 'utf-8',
-        timeout: 120000,
-        maxBuffer: 10 * 1024 * 1024,
-        env,
-      }
-    )
-    return result.trim()
-  } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error)
-    throw new Error(`Claude CLI call failed: ${msg}`)
-  }
-}
-
-export function generateConfig(
+export async function generateConfig(
   initialPrompt: string,
   conversation: readonly ConversationTurn[]
-): ProjectConfig {
+): Promise<ProjectConfig> {
   const conversationContext = conversation
     .map((turn) => `${turn.role === 'user' ? '사용자' : '시스템'}: ${turn.content}`)
     .join('\n')
@@ -61,7 +40,7 @@ ${conversationContext}
 카테고리는 4-8개, "other" 카테고리는 반드시 포함하세요.
 JSON만 출력하세요.`
 
-  const result = callClaude(prompt)
+  const result = await callAI(prompt, { model: 'general' })
 
   try {
     const jsonMatch = result.match(/\{[\s\S]*\}/)

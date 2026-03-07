@@ -1,6 +1,6 @@
 import type { ProjectConfig } from '@/types'
 import type { ReportOutline, OutlineSection } from './types'
-import { callClaudeAsync } from './claude-async'
+import { callAI } from '@/lib/ai'
 
 function buildOutlinePrompt(config: ProjectConfig): string {
   const keywordsList = [
@@ -89,7 +89,7 @@ function parseOutlineResponse(text: string): ReportOutline {
 
 export async function generateOutline(config: ProjectConfig): Promise<ReportOutline> {
   const prompt = buildOutlinePrompt(config)
-  const response = await callClaudeAsync(prompt, { model: 'opus' })
+  const response = await callAI(prompt, { model: 'reasoning' })
   return parseOutlineResponse(response)
 }
 
@@ -162,6 +162,6 @@ export async function regenerateSection(
   sectionId: string,
 ): Promise<OutlineSection> {
   const prompt = buildRegenerateSectionPrompt(config, outline, sectionId)
-  const response = await callClaudeAsync(prompt, { model: 'opus' })
+  const response = await callAI(prompt, { model: 'reasoning' })
   return parseSectionResponse(response)
 }

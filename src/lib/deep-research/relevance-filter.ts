@@ -1,5 +1,5 @@
 import type { OutlineSection } from './types'
-import { callClaudeAsync } from './claude-async'
+import { callAI } from '@/lib/ai'
 
 export async function filterRelevantArticles<T extends { readonly title: string; readonly content?: string }>(
   section: OutlineSection,
@@ -37,7 +37,7 @@ ${titlesBlock}
 JSON 블록만 출력하세요.`
 
   try {
-    const raw = await callClaudeAsync(prompt, { model: 'haiku' })
+    const raw = await callAI(prompt, { model: 'fast' })
     const jsonMatch = raw.match(/```json\s*([\s\S]*?)\s*```/) ?? raw.match(/\{[\s\S]*?\}/)
 
     if (!jsonMatch) {

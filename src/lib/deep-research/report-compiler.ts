@@ -1,6 +1,6 @@
 import type { ProjectConfig, ReportMeta } from '@/types'
 import type { ReportOutline, SectionResearchResult, SourceReference, DeepReportMeta, DeepReportSectionMeta, DeepReportSectionStatus, DeepReportPhase } from './types'
-import { callClaudeAsync } from './claude-async'
+import { callAI } from '@/lib/ai'
 import {
   getDeepReportSection,
   listDeepReportSections,
@@ -78,7 +78,7 @@ export async function generateExecutiveSummary(
   config: ProjectConfig,
 ): Promise<string> {
   const prompt = buildExecutiveSummaryPrompt(outline, results, config)
-  return callClaudeAsync(prompt, { model: 'opus' })
+  return callAI(prompt, { model: 'reasoning' })
 }
 
 export async function generateConclusion(
@@ -87,7 +87,7 @@ export async function generateConclusion(
   config: ProjectConfig,
 ): Promise<string> {
   const prompt = buildConclusionPrompt(outline, results, config)
-  return callClaudeAsync(prompt, { model: 'opus' })
+  return callAI(prompt, { model: 'reasoning' })
 }
 
 function buildGlobalReferences(allSources: readonly SourceReference[]): string {

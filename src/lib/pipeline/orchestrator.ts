@@ -7,7 +7,7 @@ import { matchDynamicKeywords, isRelevant } from '@/lib/collector/keyword-matche
 import { buildCategorizationPrompt, parseCategorizationResult } from '@/lib/analyzer/categorizer'
 import { buildSummarizationPrompt, parseSummarizationResult } from '@/lib/analyzer/summarizer'
 import { buildDynamicReport, buildReportMeta } from '@/lib/report/markdown-builder'
-import { callClaudeAsync } from '@/lib/deep-research/claude-async'
+import { callAI } from '@/lib/ai'
 import {
   getProject,
   getProjectArticles,
@@ -163,7 +163,7 @@ async function analyzePhase(
     })
 
     const catPrompt = buildCategorizationPrompt(batch, config.categories, config.domainContext)
-    const catResult = await callClaudeAsync(catPrompt, { model: 'sonnet' })
+    const catResult = await callAI(catPrompt, { model: 'general' })
     const categories = parseCategorizationResult(catResult, validCategoryIds)
 
     emit({
@@ -175,7 +175,7 @@ async function analyzePhase(
     })
 
     const sumPrompt = buildSummarizationPrompt(batch, config.domainContext)
-    const sumResult = await callClaudeAsync(sumPrompt, { model: 'sonnet' })
+    const sumResult = await callAI(sumPrompt, { model: 'general' })
     const summaries = parseSummarizationResult(sumResult)
 
     for (const article of batch) {

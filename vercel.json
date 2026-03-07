@@ -1,0 +1,34 @@
+{
+  "functions": {
+    "src/app/api/projects/[id]/deep-research/outline/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/projects/[id]/deep-research/section/search/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/projects/[id]/deep-research/section/analyze/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/projects/[id]/deep-research/compile/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/projects/[id]/deep-research/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/projects/[id]/pipeline/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/projects/[id]/finalize/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/projects/[id]/chat/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/projects/[id]/analyze/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/projects/[id]/collect/route.ts": {
+      "maxDuration": 60
+    }
+  }
+}

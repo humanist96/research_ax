@@ -12,7 +12,7 @@ import {
   buildDeepReportMetaFull,
 } from './report-compiler'
 import { generatePDF } from './pdf-generator'
-import { createConcurrencyLimiter } from './claude-async'
+import { createConcurrencyLimiter } from '@/lib/ai'
 import {
   setProjectStatus,
   getProjectReportIndex,
@@ -118,17 +118,22 @@ export async function runDeepResearch(
       reports: [reportMeta, ...index.reports],
     })
 
-    // Phase 4: PDF generation
-    currentPhase = 'pdf'
-    persistProgress()
-    emit({ type: 'phase', phase: 'pdf', message: 'PDF를 생성하고 있습니다...' })
+    // Phase 4: PDF generation (server-side, skipped on Vercel)
+    const isVercel = process.env.VERCEL === '1' || process.env.STORAGE_BACKEND === 'vercel'
+    if (!isVercel) {
+      currentPhase = 'pdf'
+      persistProgress()
+      emit({ type: 'phase', phase: 'pdf', message: 'PDF를 생성하고 있습니다...' })
 
-    try {
-      const pdfBuffer = await generatePDF(mergedMd, outline.title)
-      saveDeepReportMerged(projectId, reportId, 'pdf', pdfBuffer)
-    } catch (pdfError) {
-      const pdfMsg = pdfError instanceof Error ? pdfError.message : String(pdfError)
-      emit({ type: 'error', message: `PDF 생성 실패 (보고서는 정상 저장됨): ${pdfMsg}` })
+      try {
+        const pdfBuffer = await generatePDF(mergedMd, outline.title)
+        saveDeepReportMerged(projectId, reportId, 'pdf', pdfBuffer)
+      } catch (pdfError) {
+        const pdfMsg = pdfError instanceof Error ? pdfError.message : String(pdfError)
+        emit({ type: 'error', message: `PDF 생성 실패 (보고서는 정상 저장됨): ${pdfMsg}` })
+      }
+    } else {
+      emit({ type: 'phase', phase: 'pdf', message: 'PDF는 클라이언트에서 생성 가능합니다 (format=html)' })
     }
 
     // Final: mark complete

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getProject, addConversationTurn } from '@/lib/project/store'
-import { streamClaudeResponse, buildConversationPrompt } from '@/lib/project/chat-handler'
+import { streamChatResponse, buildConversationPrompt } from '@/lib/project/chat-handler'
 import type { ConversationTurn } from '@/types'
 
 export async function POST(
@@ -82,7 +82,7 @@ function streamResponse(
     start(controller) {
       const encoder = new TextEncoder()
 
-      streamClaudeResponse(
+      streamChatResponse(
         prompt,
         (chunk) => {
           const sseData = `data: ${JSON.stringify({ type: 'chunk', content: chunk })}\n\n`
