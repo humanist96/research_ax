@@ -61,9 +61,9 @@ async function collectPhase(
   emit: (event: PipelineEvent) => void
 ): Promise<number> {
   emit({ type: 'phase', phase: 'collecting', message: '뉴스를 수집하고 있습니다...' })
-  setProjectStatus(projectId, 'collecting')
+  await setProjectStatus(projectId, 'collecting')
 
-  const existingArticles = getProjectArticles(projectId)
+  const existingArticles = await getProjectArticles(projectId)
   const existingUrls = new Set(existingArticles.map((a) => a.url))
 
   const searchResults = await aggregateSearch(config, {
@@ -116,7 +116,7 @@ async function collectPhase(
   }
 
   const allArticles = [...existingArticles, ...newArticles]
-  saveProjectArticles(projectId, allArticles as Article[])
+  await saveProjectArticles(projectId, allArticles as Article[])
 
   emit({
     type: 'collection_progress',
@@ -134,11 +134,11 @@ async function analyzePhase(
   emit: (event: PipelineEvent) => void
 ): Promise<number> {
   emit({ type: 'phase', phase: 'analyzing', message: 'AI가 기사를 분석하고 있습니다...' })
-  setProjectStatus(projectId, 'analyzing')
+  await setProjectStatus(projectId, 'analyzing')
 
-  const excludedIds = new Set(getExcludedArticleIds(projectId))
-  const articles = getProjectArticles(projectId).filter((a) => !excludedIds.has(a.id))
-  const existingAnalyzed = getProjectAnalyzedArticles(projectId)
+  const excludedIds = new Set(await getExcludedArticleIds(projectId))
+  const articles = (await getProjectArticles(projectId)).filter((a) => !excludedIds.has(a.id))
+  const existingAnalyzed = await getProjectAnalyzedArticles(projectId)
   const analyzedIds = new Set(existingAnalyzed.map((a) => a.id))
   const unanalyzed = articles.filter((a) => !analyzedIds.has(a.id))
 
@@ -197,28 +197,28 @@ async function analyzePhase(
   }
 
   const allAnalyzed = [...existingAnalyzed, ...newAnalyzed]
-  saveProjectAnalyzedArticles(projectId, allAnalyzed as AnalyzedArticle[])
+  await saveProjectAnalyzedArticles(projectId, allAnalyzed as AnalyzedArticle[])
 
   return allAnalyzed.length
 }
 
-function reportPhase(
+async function reportPhase(
   projectId: string,
   config: ProjectConfig,
   emit: (event: PipelineEvent) => void
-): void {
+): Promise<void> {
   emit({ type: 'phase', phase: 'reporting', message: '리포트를 생성하고 있습니다...' })
-  setProjectStatus(projectId, 'reporting')
+  await setProjectStatus(projectId, 'reporting')
 
-  const excludedIds = new Set(getExcludedArticleIds(projectId))
-  const allArticles = getProjectAnalyzedArticles(projectId).filter((a) => !excludedIds.has(a.id))
+  const excludedIds = new Set(await getExcludedArticleIds(projectId))
+  const allArticles = (await getProjectAnalyzedArticles(projectId)).filter((a) => !excludedIds.has(a.id))
   const { startDate, endDate } = getDateRange()
   const articles = filterByDateRange(allArticles, startDate, endDate)
 
   emit({ type: 'report_progress', message: `${articles.length}건의 기사로 리포트 생성 중...` })
 
   const markdown = buildDynamicReport(articles, startDate, endDate, config.categories, config.reportTitle)
-  saveProjectReport(projectId, endDate, markdown)
+  await saveProjectReport(projectId, endDate, markdown)
 
   const meta = buildReportMeta(
     articles as AnalyzedArticle[],
@@ -226,7 +226,7 @@ function reportPhase(
     endDate,
     `${config.reportTitle} (${startDate} ~ ${endDate})`
   )
-  const index = getProjectReportIndex(projectId)
+  const index = await getProjectReportIndex(projectId)
   const existingIdx = index.reports.findIndex((r) => r.id === meta.id)
 
   const updatedReports =
@@ -240,7 +240,7 @@ function reportPhase(
     ),
   }
 
-  saveProjectReportIndex(projectId, updatedIndex)
+  await saveProjectReportIndex(projectId, updatedIndex)
 
   emit({ type: 'report_progress', message: '리포트 저장 완료' })
 }
@@ -254,11 +254,11 @@ export async function runPipeline(
     const articlesCollected = await collectPhase(projectId, config, emit)
 
     const CURATION_THRESHOLD = 50
-    const allArticles = getProjectArticles(projectId)
+    const allArticles = await getProjectArticles(projectId)
     if (allArticles.length >= CURATION_THRESHOLD) {
       const maxForAnalysis = config.maxArticlesForAnalysis ?? 30
       const result = curateArticles(allArticles, maxForAnalysis)
-      saveProjectArticles(projectId, result.selected as Article[])
+      await saveProjectArticles(projectId, result.selected as Article[])
       emit({
         type: 'curation_progress',
         before: result.totalBefore,
@@ -269,7 +269,7 @@ export async function runPipeline(
     }
 
     const articlesAnalyzed = await analyzePhase(projectId, config, emit)
-    reportPhase(projectId, config, emit)
+    await reportPhase(projectId, config, emit)
 
     emit({
       type: 'stats',
@@ -278,11 +278,11 @@ export async function runPipeline(
       reportGenerated: true,
     })
 
-    setProjectStatus(projectId, 'complete')
+    await setProjectStatus(projectId, 'complete')
     emit({ type: 'phase', phase: 'complete', message: '파이프라인이 완료되었습니다' })
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
-    setProjectStatus(projectId, 'error')
+    await setProjectStatus(projectId, 'error')
     emit({ type: 'error', message })
     emit({ type: 'phase', phase: 'error', message: `파이프라인 오류: ${message}` })
   }

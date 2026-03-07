@@ -51,7 +51,7 @@ function getProjectId(): string | null {
 }
 
 async function collectForProject(projectId: string) {
-  const project = getProject(projectId)
+  const project = await getProject(projectId)
   if (!project) {
     console.error(`[Collect] Project ${projectId} not found`)
     process.exit(1)
@@ -64,7 +64,7 @@ async function collectForProject(projectId: string) {
   const config = project.config
   console.log(`[Collect] Starting collection for project: ${project.name}`)
 
-  const existingArticles = getProjectArticles(projectId)
+  const existingArticles = await getProjectArticles(projectId)
   const existingUrls = new Set(existingArticles.map((a) => a.url))
   const errors: string[] = []
 
@@ -126,7 +126,7 @@ async function collectForProject(projectId: string) {
   console.log(`[Collect] New relevant articles: ${newArticles.length}`)
 
   const allArticles = [...existingArticles, ...newArticles]
-  saveProjectArticles(projectId, allArticles)
+  await saveProjectArticles(projectId, allArticles)
   console.log(`[Collect] Total articles saved: ${allArticles.length}`)
 
   const log: CollectionLog = {
@@ -137,8 +137,8 @@ async function collectForProject(projectId: string) {
     errors,
   }
 
-  const logs = [...getProjectCollectionLog(projectId), log]
-  saveProjectCollectionLog(projectId, logs)
+  const logs = [...(await getProjectCollectionLog(projectId)), log]
+  await saveProjectCollectionLog(projectId, logs)
 
   console.log('[Collect] Collection complete!')
 }

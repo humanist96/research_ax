@@ -50,7 +50,7 @@ function getProjectId(): string | null {
 }
 
 async function analyzeForProject(projectId: string) {
-  const project = getProject(projectId)
+  const project = await getProject(projectId)
   if (!project) {
     console.error(`[Analyze] Project ${projectId} not found`)
     process.exit(1)
@@ -63,9 +63,9 @@ async function analyzeForProject(projectId: string) {
   const config = project.config
   console.log(`[Analyze] Starting analysis for project: ${project.name}`)
 
-  const excludedIds = new Set(getExcludedArticleIds(projectId))
-  const articles = getProjectArticles(projectId).filter((a) => !excludedIds.has(a.id))
-  const existingAnalyzed = getProjectAnalyzedArticles(projectId)
+  const excludedIds = new Set(await getExcludedArticleIds(projectId))
+  const articles = (await getProjectArticles(projectId)).filter((a) => !excludedIds.has(a.id))
+  const existingAnalyzed = await getProjectAnalyzedArticles(projectId)
   const analyzedIds = new Set(existingAnalyzed.map((a) => a.id))
 
   const unanalyzed = articles.filter((a) => !analyzedIds.has(a.id))
@@ -107,7 +107,7 @@ async function analyzeForProject(projectId: string) {
   }
 
   const allAnalyzed = [...existingAnalyzed, ...newAnalyzed]
-  saveProjectAnalyzedArticles(projectId, allAnalyzed)
+  await saveProjectAnalyzedArticles(projectId, allAnalyzed)
   console.log(`[Analyze] Total analyzed articles: ${allAnalyzed.length}`)
   console.log('[Analyze] Analysis complete!')
 }

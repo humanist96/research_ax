@@ -24,7 +24,7 @@ function runStep(step: string, projectId: string): void {
 async function main() {
   const projectId = getProjectId()
 
-  const project = getProject(projectId)
+  const project = await getProject(projectId)
   if (!project) {
     console.error(`[Pipeline] Project ${projectId} not found`)
     process.exit(1)
@@ -37,19 +37,19 @@ async function main() {
   console.log(`[Pipeline] Starting pipeline for: ${project.name}`)
 
   try {
-    setProjectStatus(projectId, 'collecting')
+    await setProjectStatus(projectId, 'collecting')
     runStep('collect', projectId)
 
-    setProjectStatus(projectId, 'analyzing')
+    await setProjectStatus(projectId, 'analyzing')
     runStep('analyze', projectId)
 
-    setProjectStatus(projectId, 'reporting')
+    await setProjectStatus(projectId, 'reporting')
     runStep('generate-report', projectId)
 
-    setProjectStatus(projectId, 'complete')
+    await setProjectStatus(projectId, 'complete')
     console.log('\n[Pipeline] All steps completed successfully!')
   } catch (error) {
-    setProjectStatus(projectId, 'error')
+    await setProjectStatus(projectId, 'error')
     const msg = error instanceof Error ? error.message : String(error)
     console.error(`[Pipeline] Failed: ${msg}`)
     process.exit(1)

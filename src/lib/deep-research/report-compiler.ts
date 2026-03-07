@@ -108,31 +108,31 @@ function buildGlobalReferences(allSources: readonly SourceReference[]): string {
   return `## 참고 자료\n\n${lines.join('\n')}\n`
 }
 
-export function buildMergedMarkdown(
+export async function buildMergedMarkdown(
   projectId: string,
   reportId: string,
   meta: DeepReportMeta,
   allSources?: readonly SourceReference[],
-): string {
+): Promise<string> {
   const parts: string[] = []
 
   parts.push(`# ${meta.title}\n`)
   parts.push(`> 생성일: ${meta.generatedAt}\n`)
 
-  const execSummary = getDeepReportSection(projectId, reportId, 'executive-summary')
+  const execSummary = await getDeepReportSection(projectId, reportId, 'executive-summary')
   if (execSummary) {
     parts.push(`## 핵심 요약\n\n${execSummary}\n`)
   }
 
   for (const sectionMeta of meta.sections) {
     if (sectionMeta.id === 'executive-summary' || sectionMeta.id === 'conclusion') continue
-    const content = getDeepReportSection(projectId, reportId, sectionMeta.id)
+    const content = await getDeepReportSection(projectId, reportId, sectionMeta.id)
     if (content) {
       parts.push(`## ${sectionMeta.title}\n\n${content}\n`)
     }
   }
 
-  const conclusion = getDeepReportSection(projectId, reportId, 'conclusion')
+  const conclusion = await getDeepReportSection(projectId, reportId, 'conclusion')
   if (conclusion) {
     parts.push(`## 결론 및 전망\n\n${conclusion}\n`)
   }

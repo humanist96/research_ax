@@ -40,10 +40,10 @@ export async function runDeepResearch(
   let outline: ReportOutline | null = null
   const results: SectionResearchResult[] = []
 
-  function persistProgress(): void {
+  async function persistProgress(): Promise<void> {
     if (!outline) return
     const meta = buildDeepReportMetaFull(reportId, outline, results, sectionStatuses, currentPhase)
-    saveDeepReportMeta(projectId, reportId, meta)
+    await saveDeepReportMeta(projectId, reportId, meta)
   }
 
   try {
@@ -63,11 +63,11 @@ export async function runDeepResearch(
     }
 
     // Save initial meta with phase
-    persistProgress()
+    await persistProgress()
 
     // Phase 2: Section research
     currentPhase = 'researching'
-    persistProgress()
+    await persistProgress()
     emit({ type: 'phase', phase: 'researching', message: '섹션별 리서치를 진행하고 있습니다...' })
 
     if (options?.enableArticleReview) {
@@ -84,7 +84,7 @@ export async function runDeepResearch(
 
     // Phase 3: Executive summary + conclusion + merge
     currentPhase = 'compiling'
-    persistProgress()
+    await persistProgress()
     emit({ type: 'phase', phase: 'compiling', message: '핵심 요약과 결론을 생성하고 있습니다...' })
 
     const [execSummary, conclusion] = await Promise.all([
@@ -92,29 +92,29 @@ export async function runDeepResearch(
       generateConclusion(outline, results, config),
     ])
 
-    saveDeepReportSection(projectId, reportId, 'executive-summary', execSummary)
+    await saveDeepReportSection(projectId, reportId, 'executive-summary', execSummary)
     sectionStatuses.set('executive-summary', 'complete')
 
-    saveDeepReportSection(projectId, reportId, 'conclusion', conclusion)
+    await saveDeepReportSection(projectId, reportId, 'conclusion', conclusion)
     sectionStatuses.set('conclusion', 'complete')
 
     // Build and save final meta (still compiling phase)
-    persistProgress()
+    await persistProgress()
 
     // Build and save merged markdown (with global references)
     const allSources = results.flatMap((r) => r.sources)
     const finalMeta = buildDeepReportMetaFull(reportId, outline, results, sectionStatuses, currentPhase)
-    const mergedMd = buildMergedMarkdown(projectId, reportId, finalMeta, allSources)
-    saveDeepReportMerged(projectId, reportId, 'md', mergedMd)
+    const mergedMd = await buildMergedMarkdown(projectId, reportId, finalMeta, allSources)
+    await saveDeepReportMerged(projectId, reportId, 'md', mergedMd)
 
     // Also save as flat .md for backward compatibility with ReportList
     const { saveProjectReport } = await import('@/lib/project/store')
-    saveProjectReport(projectId, reportId, mergedMd)
+    await saveProjectReport(projectId, reportId, mergedMd)
 
     // Register in ReportIndex
     const reportMeta = buildDeepReportMeta(reportId, outline, results)
-    const index = getProjectReportIndex(projectId)
-    saveProjectReportIndex(projectId, {
+    const index = await getProjectReportIndex(projectId)
+    await saveProjectReportIndex(projectId, {
       reports: [reportMeta, ...index.reports],
     })
 
@@ -122,12 +122,12 @@ export async function runDeepResearch(
     const isVercel = process.env.VERCEL === '1' || process.env.STORAGE_BACKEND === 'vercel'
     if (!isVercel) {
       currentPhase = 'pdf'
-      persistProgress()
+      await persistProgress()
       emit({ type: 'phase', phase: 'pdf', message: 'PDF를 생성하고 있습니다...' })
 
       try {
         const pdfBuffer = await generatePDF(mergedMd, outline.title)
-        saveDeepReportMerged(projectId, reportId, 'pdf', pdfBuffer)
+        await saveDeepReportMerged(projectId, reportId, 'pdf', pdfBuffer)
       } catch (pdfError) {
         const pdfMsg = pdfError instanceof Error ? pdfError.message : String(pdfError)
         emit({ type: 'error', message: `PDF 생성 실패 (보고서는 정상 저장됨): ${pdfMsg}` })
@@ -138,16 +138,16 @@ export async function runDeepResearch(
 
     // Final: mark complete
     currentPhase = 'complete'
-    persistProgress()
-    setProjectStatus(projectId, 'complete')
+    await persistProgress()
+    await setProjectStatus(projectId, 'complete')
 
     emit({ type: 'report_complete', reportId })
     emit({ type: 'phase', phase: 'complete', message: '딥 리서치가 완료되었습니다' })
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error)
     currentPhase = 'error'
-    persistProgress()
-    setProjectStatus(projectId, 'error')
+    await persistProgress()
+    await setProjectStatus(projectId, 'error')
     emit({ type: 'error', message: msg })
     emit({ type: 'phase', phase: 'error', message: msg })
   }
@@ -168,15 +168,15 @@ async function runStandardResearch(
   const sectionPromises = outline.sections.map((section) =>
     limiter.run(async () => {
       try {
-        const result = await researchSection(section, config, (status, message, sourcesFound) => {
+        const result = await researchSection(section, config, async (status, message, sourcesFound) => {
           sectionStatuses.set(section.id, status)
-          persistProgress()
+          await persistProgress()
           emit({ type: 'section_status', sectionId: section.id, status, sourcesFound, message })
         })
 
-        saveDeepReportSection(projectId, reportId, section.id, result.content)
+        await saveDeepReportSection(projectId, reportId, section.id, result.content)
         sectionStatuses.set(section.id, 'complete')
-        persistProgress()
+        await persistProgress()
 
         emit({
           type: 'section_status',
@@ -191,7 +191,7 @@ async function runStandardResearch(
       } catch (error) {
         const msg = error instanceof Error ? error.message : String(error)
         sectionStatuses.set(section.id, 'error')
-        persistProgress()
+        await persistProgress()
         emit({ type: 'section_status', sectionId: section.id, status: 'error', message: msg })
         return null
       }
@@ -221,12 +221,12 @@ async function runWithArticleReview(
     limiter.run(async () => {
       try {
         sectionStatuses.set(section.id, 'searching')
-        persistProgress()
+        await persistProgress()
         emit({ type: 'section_status', sectionId: section.id, status: 'searching', message: '검색 및 필터링 중...' })
 
-        const articles = await searchAndFilterSection(section, config, (status, message, sourcesFound) => {
+        const articles = await searchAndFilterSection(section, config, async (status, message, sourcesFound) => {
           sectionStatuses.set(section.id, status)
-          persistProgress()
+          await persistProgress()
           emit({ type: 'section_status', sectionId: section.id, status, sourcesFound, message })
         })
 
@@ -266,7 +266,7 @@ async function runWithArticleReview(
   for (const section of outline.sections) {
     sectionStatuses.set(section.id, 'pending')
   }
-  persistProgress()
+  await persistProgress()
 
   // Step 3: Wait for user review
   let excludedBySection: ReadonlyMap<string, readonly string[]>
@@ -292,7 +292,7 @@ async function runWithArticleReview(
           : allArticles
 
         sectionStatuses.set(section.id, 'analyzing')
-        persistProgress()
+        await persistProgress()
         emit({
           type: 'section_status',
           sectionId: section.id,
@@ -301,15 +301,15 @@ async function runWithArticleReview(
           message: `${filteredArticles.length}건 기사 분석 중...`,
         })
 
-        const result = await analyzeSection(section, filteredArticles, config, (status, message, sourcesFound) => {
+        const result = await analyzeSection(section, filteredArticles, config, async (status, message, sourcesFound) => {
           sectionStatuses.set(section.id, status)
-          persistProgress()
+          await persistProgress()
           emit({ type: 'section_status', sectionId: section.id, status, sourcesFound, message })
         })
 
-        saveDeepReportSection(projectId, reportId, section.id, result.content)
+        await saveDeepReportSection(projectId, reportId, section.id, result.content)
         sectionStatuses.set(section.id, 'complete')
-        persistProgress()
+        await persistProgress()
 
         emit({
           type: 'section_status',
@@ -324,7 +324,7 @@ async function runWithArticleReview(
       } catch (error) {
         const msg = error instanceof Error ? error.message : String(error)
         sectionStatuses.set(section.id, 'error')
-        persistProgress()
+        await persistProgress()
         emit({ type: 'section_status', sectionId: section.id, status: 'error', message: msg })
         return null
       }

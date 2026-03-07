@@ -22,7 +22,7 @@ export async function POST(
 ) {
   try {
     const { id } = await params
-    const project = getProject(id)
+    const project = await getProject(id)
     if (!project) {
       return NextResponse.json(
         { success: false, error: 'Project not found' },
@@ -40,9 +40,9 @@ export async function POST(
     const config = project.config
 
     try {
-      setProjectStatus(id, 'collecting')
+      await setProjectStatus(id, 'collecting')
 
-      const existingArticles = getProjectArticles(id)
+      const existingArticles = await getProjectArticles(id)
       const existingUrls = new Set(existingArticles.map((a) => a.url))
       const errors: string[] = []
 
@@ -88,7 +88,7 @@ export async function POST(
       }
 
       const allArticles = [...existingArticles, ...newArticles]
-      saveProjectArticles(id, allArticles as Article[])
+      await saveProjectArticles(id, allArticles as Article[])
 
       const log: CollectionLog = {
         timestamp: new Date().toISOString(),
@@ -98,14 +98,14 @@ export async function POST(
         errors,
       }
 
-      const logs = [...getProjectCollectionLog(id), log]
-      saveProjectCollectionLog(id, logs)
+      const logs = [...await getProjectCollectionLog(id), log]
+      await saveProjectCollectionLog(id, logs)
 
-      setProjectStatus(id, 'ready')
-      const updated = getProject(id)
+      await setProjectStatus(id, 'ready')
+      const updated = await getProject(id)
       return NextResponse.json({ success: true, data: updated })
     } catch (error) {
-      setProjectStatus(id, 'error')
+      await setProjectStatus(id, 'error')
       throw error
     }
   } catch (error) {

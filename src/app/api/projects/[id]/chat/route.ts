@@ -9,7 +9,7 @@ export async function POST(
 ) {
   try {
     const { id } = await params
-    const project = getProject(id)
+    const project = await getProject(id)
     if (!project) {
       return NextResponse.json(
         { success: false, error: 'Project not found' },
@@ -46,9 +46,9 @@ export async function POST(
       content: message.trim(),
       timestamp: new Date().toISOString(),
     }
-    addConversationTurn(id, userTurn)
+    await addConversationTurn(id, userTurn)
 
-    const updatedProject = getProject(id)
+    const updatedProject = await getProject(id)
     if (!updatedProject) {
       return NextResponse.json(
         { success: false, error: 'Project not found after update' },
@@ -94,18 +94,18 @@ function streamResponse(
             content: fullText,
             timestamp: new Date().toISOString(),
           }
-          addConversationTurn(projectId, assistantTurn)
-
-          // Try to parse as structured JSON response
-          const parsed = tryParseStructuredResponse(fullText)
-          if (parsed) {
-            const sseData = `data: ${JSON.stringify({ type: 'structured', content: fullText, structured: parsed })}\n\n`
-            controller.enqueue(encoder.encode(sseData))
-          } else {
-            const sseData = `data: ${JSON.stringify({ type: 'done', content: fullText })}\n\n`
-            controller.enqueue(encoder.encode(sseData))
-          }
-          controller.close()
+          addConversationTurn(projectId, assistantTurn).then(() => {
+            // Try to parse as structured JSON response
+            const parsed = tryParseStructuredResponse(fullText)
+            if (parsed) {
+              const sseData = `data: ${JSON.stringify({ type: 'structured', content: fullText, structured: parsed })}\n\n`
+              controller.enqueue(encoder.encode(sseData))
+            } else {
+              const sseData = `data: ${JSON.stringify({ type: 'done', content: fullText })}\n\n`
+              controller.enqueue(encoder.encode(sseData))
+            }
+            controller.close()
+          })
         },
         (error) => {
           const sseData = `data: ${JSON.stringify({ type: 'error', content: error.message })}\n\n`

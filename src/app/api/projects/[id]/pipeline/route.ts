@@ -8,7 +8,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const project = getProject(id)
+  const project = await getProject(id)
 
   if (!project) {
     return new Response(

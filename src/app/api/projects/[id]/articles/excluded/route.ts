@@ -12,7 +12,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    const project = getProject(id)
+    const project = await getProject(id)
     if (!project) {
       return NextResponse.json(
         { success: false, error: 'Project not found' },
@@ -20,7 +20,7 @@ export async function GET(
       )
     }
 
-    const ids = getExcludedArticleIds(id)
+    const ids = await getExcludedArticleIds(id)
     return NextResponse.json({ success: true, data: ids })
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error)
@@ -34,7 +34,7 @@ export async function PUT(
 ) {
   try {
     const { id } = await params
-    const project = getProject(id)
+    const project = await getProject(id)
     if (!project) {
       return NextResponse.json(
         { success: false, error: 'Project not found' },
@@ -52,11 +52,11 @@ export async function PUT(
       )
     }
 
-    const articles = getProjectArticles(id)
+    const articles = await getProjectArticles(id)
     const validIds = new Set(articles.map((a) => a.id))
     const filtered = ids.filter((articleId: string) => validIds.has(articleId))
 
-    saveExcludedArticleIds(id, filtered)
+    await saveExcludedArticleIds(id, filtered)
     return NextResponse.json({ success: true, data: filtered })
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error)

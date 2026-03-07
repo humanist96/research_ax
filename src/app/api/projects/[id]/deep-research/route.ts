@@ -9,7 +9,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params
-  const project = getProject(id)
+  const project = await getProject(id)
 
   if (!project) {
     return new Response(
@@ -54,7 +54,7 @@ export async function POST(
     // No body or invalid JSON — proceed without outline
   }
 
-  setProjectStatus(id, 'researching')
+  await setProjectStatus(id, 'researching')
 
   const config: ProjectConfig = keywordBlacklist.length > 0
     ? { ...project.config, keywordBlacklist }

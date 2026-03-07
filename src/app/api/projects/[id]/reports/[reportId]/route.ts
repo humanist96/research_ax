@@ -8,7 +8,7 @@ export async function GET(
   try {
     const { id, reportId } = await params
 
-    const project = getProject(id)
+    const project = await getProject(id)
     if (!project) {
       return NextResponse.json(
         { success: false, error: 'Project not found' },
@@ -16,7 +16,7 @@ export async function GET(
       )
     }
 
-    const meta = getDeepReportMeta(id, reportId)
+    const meta = await getDeepReportMeta(id, reportId)
     if (!meta) {
       return NextResponse.json(
         { success: false, error: 'Report not found' },
@@ -24,8 +24,8 @@ export async function GET(
       )
     }
 
-    const sections = meta.sections.map((s) => {
-      const content = getDeepReportSection(id, reportId, s.id)
+    const sections = await Promise.all(meta.sections.map(async (s) => {
+      const content = await getDeepReportSection(id, reportId, s.id)
       return {
         id: s.id,
         title: s.title,
@@ -33,7 +33,7 @@ export async function GET(
         sourcesCount: s.sourcesCount,
         status: s.status,
       }
-    })
+    }))
 
     return NextResponse.json({
       success: true,

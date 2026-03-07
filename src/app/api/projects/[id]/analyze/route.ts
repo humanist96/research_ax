@@ -21,7 +21,7 @@ export async function POST(
 ) {
   try {
     const { id } = await params
-    const project = getProject(id)
+    const project = await getProject(id)
     if (!project) {
       return NextResponse.json(
         { success: false, error: 'Project not found' },
@@ -39,17 +39,17 @@ export async function POST(
     const config = project.config
 
     try {
-      setProjectStatus(id, 'analyzing')
+      await setProjectStatus(id, 'analyzing')
 
-      const excludedIds = new Set(getExcludedArticleIds(id))
-      const articles = getProjectArticles(id).filter((a) => !excludedIds.has(a.id))
-      const existingAnalyzed = getProjectAnalyzedArticles(id)
+      const excludedIds = new Set(await getExcludedArticleIds(id))
+      const articles = (await getProjectArticles(id)).filter((a) => !excludedIds.has(a.id))
+      const existingAnalyzed = await getProjectAnalyzedArticles(id)
       const analyzedIds = new Set(existingAnalyzed.map((a) => a.id))
       const unanalyzed = articles.filter((a) => !analyzedIds.has(a.id))
 
       if (unanalyzed.length === 0) {
-        setProjectStatus(id, 'ready')
-        const updated = getProject(id)
+        await setProjectStatus(id, 'ready')
+        const updated = await getProject(id)
         return NextResponse.json({ success: true, data: updated })
       }
 
@@ -77,13 +77,13 @@ export async function POST(
       }
 
       const allAnalyzed = [...existingAnalyzed, ...newAnalyzed]
-      saveProjectAnalyzedArticles(id, allAnalyzed as AnalyzedArticle[])
+      await saveProjectAnalyzedArticles(id, allAnalyzed as AnalyzedArticle[])
 
-      setProjectStatus(id, 'ready')
-      const updated = getProject(id)
+      await setProjectStatus(id, 'ready')
+      const updated = await getProject(id)
       return NextResponse.json({ success: true, data: updated })
     } catch (error) {
-      setProjectStatus(id, 'error')
+      await setProjectStatus(id, 'error')
       throw error
     }
   } catch (error) {

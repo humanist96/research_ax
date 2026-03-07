@@ -6,14 +6,14 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params
-  const project = getProject(id)
+  const project = await getProject(id)
 
   if (!project) {
     return Response.json({ success: false, error: 'Project not found' }, { status: 404 })
   }
 
   const isActive = project.status === 'researching'
-  const meta = getLatestDeepReportMeta(id)
+  const meta = await getLatestDeepReportMeta(id)
 
   if (!meta) {
     return Response.json({

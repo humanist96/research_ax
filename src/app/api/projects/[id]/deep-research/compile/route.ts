@@ -23,7 +23,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params
-  const project = getProject(id)
+  const project = await getProject(id)
 
   if (!project) {
     return Response.json({ success: false, error: 'Project not found' }, { status: 404 })
@@ -53,8 +53,8 @@ export async function POST(
     ])
 
     // Save sections
-    saveDeepReportSection(id, reportId, 'executive-summary', execSummary)
-    saveDeepReportSection(id, reportId, 'conclusion', conclusion)
+    await saveDeepReportSection(id, reportId, 'executive-summary', execSummary)
+    await saveDeepReportSection(id, reportId, 'conclusion', conclusion)
 
     // Build section statuses
     const sectionStatuses = new Map<string, DeepReportSectionStatus>()
@@ -66,24 +66,24 @@ export async function POST(
 
     // Save meta
     const meta = buildDeepReportMetaFull(reportId, outline, sectionResults, sectionStatuses, 'complete')
-    saveDeepReportMeta(id, reportId, meta)
+    await saveDeepReportMeta(id, reportId, meta)
 
     // Build and save merged markdown
     const allSources = sectionResults.flatMap((r) => r.sources)
-    const mergedMd = buildMergedMarkdown(id, reportId, meta, allSources)
-    saveDeepReportMerged(id, reportId, 'md', mergedMd)
+    const mergedMd = await buildMergedMarkdown(id, reportId, meta, allSources)
+    await saveDeepReportMerged(id, reportId, 'md', mergedMd)
 
     // Save flat .md for compatibility
-    saveProjectReport(id, reportId, mergedMd)
+    await saveProjectReport(id, reportId, mergedMd)
 
     // Register in ReportIndex
     const reportMeta = buildDeepReportMeta(reportId, outline, sectionResults)
-    const index = getProjectReportIndex(id)
-    saveProjectReportIndex(id, {
+    const index = await getProjectReportIndex(id)
+    await saveProjectReportIndex(id, {
       reports: [reportMeta, ...index.reports],
     })
 
-    setProjectStatus(id, 'complete')
+    await setProjectStatus(id, 'complete')
 
     return Response.json({
       success: true,
@@ -94,7 +94,7 @@ export async function POST(
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
-    setProjectStatus(id, 'error')
+    await setProjectStatus(id, 'error')
     return Response.json({ success: false, error: message }, { status: 500 })
   }
 }

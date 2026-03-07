@@ -9,7 +9,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params
-  const project = getProject(id)
+  const project = await getProject(id)
 
   if (!project) {
     return Response.json({ success: false, error: 'Project not found' }, { status: 404 })
@@ -33,7 +33,7 @@ export async function POST(
     const result = await analyzeSection(body.section, body.articles, project.config)
 
     // Save section content
-    saveDeepReportSection(id, body.reportId, body.section.id, result.content)
+    await saveDeepReportSection(id, body.reportId, body.section.id, result.content)
 
     return Response.json({
       success: true,

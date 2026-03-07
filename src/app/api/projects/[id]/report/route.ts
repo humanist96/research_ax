@@ -37,7 +37,7 @@ export async function POST(
 ) {
   try {
     const { id } = await params
-    const project = getProject(id)
+    const project = await getProject(id)
     if (!project) {
       return NextResponse.json(
         { success: false, error: 'Project not found' },
@@ -55,15 +55,15 @@ export async function POST(
     const config = project.config
 
     try {
-      setProjectStatus(id, 'reporting')
+      await setProjectStatus(id, 'reporting')
 
-      const excludedIds = new Set(getExcludedArticleIds(id))
-      const allArticles = getProjectAnalyzedArticles(id).filter((a) => !excludedIds.has(a.id))
+      const excludedIds = new Set(await getExcludedArticleIds(id))
+      const allArticles = (await getProjectAnalyzedArticles(id)).filter((a) => !excludedIds.has(a.id))
       const { startDate, endDate } = getDateRange()
       const articles = filterByDateRange(allArticles, startDate, endDate)
 
       const markdown = buildDynamicReport(articles as AnalyzedArticle[], startDate, endDate, config.categories, config.reportTitle)
-      saveProjectReport(id, endDate, markdown)
+      await saveProjectReport(id, endDate, markdown)
 
       const meta = buildReportMeta(
         articles as AnalyzedArticle[],
@@ -71,7 +71,7 @@ export async function POST(
         endDate,
         `${config.reportTitle} (${startDate} ~ ${endDate})`
       )
-      const index = getProjectReportIndex(id)
+      const index = await getProjectReportIndex(id)
       const existingIdx = index.reports.findIndex((r) => r.id === meta.id)
 
       const updatedReports =
@@ -85,13 +85,13 @@ export async function POST(
         ),
       }
 
-      saveProjectReportIndex(id, updatedIndex)
+      await saveProjectReportIndex(id, updatedIndex)
 
-      setProjectStatus(id, 'complete')
-      const updated = getProject(id)
+      await setProjectStatus(id, 'complete')
+      const updated = await getProject(id)
       return NextResponse.json({ success: true, data: updated })
     } catch (error) {
-      setProjectStatus(id, 'error')
+      await setProjectStatus(id, 'error')
       throw error
     }
   } catch (error) {

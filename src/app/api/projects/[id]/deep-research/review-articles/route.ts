@@ -8,7 +8,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params
-  const project = getProject(id)
+  const project = await getProject(id)
 
   if (!project) {
     return NextResponse.json(
@@ -30,7 +30,7 @@ export async function POST(
   const excludedBySection = body.excludedBySection ?? {}
 
   // Find the latest deep report that is pending review
-  const meta = getLatestDeepReportMeta(id)
+  const meta = await getLatestDeepReportMeta(id)
   if (!meta) {
     return NextResponse.json(
       { success: false, error: 'No active deep research found' },

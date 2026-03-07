@@ -11,7 +11,7 @@ export async function GET(
   try {
     const { id, reportId } = await params
 
-    const project = getProject(id)
+    const project = await getProject(id)
     if (!project) {
       return NextResponse.json(
         { success: false, error: 'Project not found' },
@@ -19,7 +19,7 @@ export async function GET(
       )
     }
 
-    const meta = getDeepReportMeta(id, reportId)
+    const meta = await getDeepReportMeta(id, reportId)
     if (!meta) {
       return NextResponse.json(
         { success: false, error: 'Report not found' },
@@ -34,7 +34,7 @@ export async function GET(
 
     // HTML format: for client-side PDF generation
     if (format === 'html') {
-      const mdContent = getDeepReportMerged(id, reportId, 'md')
+      const mdContent = await getDeepReportMerged(id, reportId, 'md')
       if (!mdContent) {
         return NextResponse.json(
           { success: false, error: 'MD file not found' },
@@ -73,7 +73,7 @@ export async function GET(
     }
 
     // MD format (default)
-    const content = getDeepReportMerged(id, reportId, 'md')
+    const content = await getDeepReportMerged(id, reportId, 'md')
     if (!content) {
       return NextResponse.json(
         { success: false, error: 'MD file not found' },

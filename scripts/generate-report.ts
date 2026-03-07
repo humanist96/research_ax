@@ -55,7 +55,7 @@ function filterByDateRange(articles: AnalyzedArticle[], startDate: string, endDa
 }
 
 async function reportForProject(projectId: string) {
-  const project = getProject(projectId)
+  const project = await getProject(projectId)
   if (!project) {
     console.error(`[Report] Project ${projectId} not found`)
     process.exit(1)
@@ -68,7 +68,7 @@ async function reportForProject(projectId: string) {
   const config = project.config
   console.log(`[Report] Generating report for project: ${project.name}`)
 
-  const allArticles = getProjectAnalyzedArticles(projectId)
+  const allArticles = await getProjectAnalyzedArticles(projectId)
   if (allArticles.length === 0) {
     console.error('[Report] No analyzed articles found. Run analyze first.')
     process.exit(1)
@@ -80,11 +80,11 @@ async function reportForProject(projectId: string) {
   console.log(`[Report] Using ${articles.length} articles for report`)
 
   const markdown = buildDynamicReport(articles, startDate, endDate, config.categories, config.reportTitle)
-  saveProjectReport(projectId, endDate, markdown)
+  await saveProjectReport(projectId, endDate, markdown)
   console.log(`[Report] Report saved`)
 
   const meta = buildReportMeta(articles, startDate, endDate, `${config.reportTitle} (${startDate} ~ ${endDate})`)
-  const index = getProjectReportIndex(projectId)
+  const index = await getProjectReportIndex(projectId)
   const existingIdx = index.reports.findIndex((r) => r.id === meta.id)
 
   const updatedReports =
@@ -98,7 +98,7 @@ async function reportForProject(projectId: string) {
     ),
   }
 
-  saveProjectReportIndex(projectId, updatedIndex)
+  await saveProjectReportIndex(projectId, updatedIndex)
   console.log('[Report] Report index updated.')
   console.log('[Report] Generation complete!')
 }

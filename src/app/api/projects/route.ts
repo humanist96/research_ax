@@ -3,7 +3,7 @@ import { listProjects, createProject } from '@/lib/project/store'
 
 export async function GET() {
   try {
-    const projects = listProjects()
+    const projects = await listProjects()
     return NextResponse.json({ success: true, data: projects })
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error)
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     }
 
     const projectName = name?.trim() || prompt.trim().slice(0, 50)
-    const project = createProject(projectName, prompt.trim())
+    const project = await createProject(projectName, prompt.trim())
 
     return NextResponse.json({ success: true, data: project }, { status: 201 })
   } catch (error) {

@@ -9,7 +9,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    const project = getProject(id)
+    const project = await getProject(id)
     if (!project) {
       return NextResponse.json(
         { success: false, error: 'Project not found' },
@@ -21,7 +21,7 @@ export async function GET(
     const reportId = searchParams.get('reportId')
 
     if (reportId) {
-      const content = getProjectReportContent(id, reportId)
+      const content = await getProjectReportContent(id, reportId)
       if (!content) {
         return NextResponse.json(
           { success: false, error: 'Report not found' },
@@ -31,7 +31,7 @@ export async function GET(
       return NextResponse.json({ success: true, data: { content } })
     }
 
-    const index = getProjectReportIndex(id)
+    const index = await getProjectReportIndex(id)
 
     const contents: Record<string, string> = {}
     const reportsDir = path.join(getProjectDir(id), 'reports')

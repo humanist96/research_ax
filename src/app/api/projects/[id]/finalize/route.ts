@@ -8,7 +8,7 @@ export async function POST(
 ) {
   try {
     const { id } = await params
-    const project = getProject(id)
+    const project = await getProject(id)
     if (!project) {
       return NextResponse.json(
         { success: false, error: 'Project not found' },
@@ -23,14 +23,14 @@ export async function POST(
       )
     }
 
-    setProjectStatus(id, 'configuring')
+    await setProjectStatus(id, 'configuring')
 
     try {
       const config = await generateConfig(project.prompt, project.conversation)
-      const updated = setProjectConfig(id, config)
+      const updated = await setProjectConfig(id, config)
       return NextResponse.json({ success: true, data: updated })
     } catch (error) {
-      setProjectStatus(id, 'conversation')
+      await setProjectStatus(id, 'conversation')
       throw error
     }
   } catch (error) {
