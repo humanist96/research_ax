@@ -7,7 +7,12 @@ import type { DeepReportMeta } from '@/lib/deep-research/types'
 import { getStorage } from '@/lib/storage'
 
 function isVercelStorage(): boolean {
-  return process.env.STORAGE_BACKEND === 'vercel'
+  // Check explicit setting first, then fall back to Vercel platform detection
+  const backend = process.env.STORAGE_BACKEND?.trim()
+  if (backend === 'vercel') return true
+  if (backend === 'local') return false
+  // Auto-detect: Vercel sets VERCEL=1 on all deployments
+  return process.env.VERCEL === '1'
 }
 
 // --- Local filesystem helpers ---

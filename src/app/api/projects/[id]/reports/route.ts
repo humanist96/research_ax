@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import * as fs from 'fs'
-import { getProject, getProjectReportIndex, getProjectReportContent, getProjectDir } from '@/lib/project/store'
-import * as path from 'path'
+import { getProject, getProjectReportIndex, getProjectReportContent } from '@/lib/project/store'
 
 export async function GET(
   request: NextRequest,
@@ -33,18 +31,13 @@ export async function GET(
 
     const index = await getProjectReportIndex(id)
 
+    // Load report contents from store (works on both local and Vercel)
     const contents: Record<string, string> = {}
-    const reportsDir = path.join(getProjectDir(id), 'reports')
-    try {
-      const files = fs.readdirSync(reportsDir)
-      for (const file of files) {
-        if (file.endsWith('.md')) {
-          const rId = file.replace('.md', '')
-          contents[rId] = fs.readFileSync(path.join(reportsDir, file), 'utf-8')
-        }
+    for (const report of index.reports) {
+      const content = await getProjectReportContent(id, report.id)
+      if (content) {
+        contents[report.id] = content
       }
-    } catch {
-      // no reports yet
     }
 
     return NextResponse.json({

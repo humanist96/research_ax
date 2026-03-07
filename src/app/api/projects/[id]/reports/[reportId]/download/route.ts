@@ -1,7 +1,5 @@
-import * as fs from 'fs'
-import * as path from 'path'
 import { NextRequest, NextResponse } from 'next/server'
-import { getProject, getDeepReportMeta, getDeepReportMerged, getProjectDir } from '@/lib/project/store'
+import { getProject, getDeepReportMeta, getDeepReportMerged } from '@/lib/project/store'
 import { buildReportHtml } from '@/lib/deep-research/pdf-generator'
 
 export async function GET(
@@ -49,22 +47,19 @@ export async function GET(
       })
     }
 
-    // PDF format: serve pre-generated PDF (local mode only)
+    // PDF format: serve pre-generated PDF from store
     if (format === 'pdf') {
-      const safeName = reportId.replace(/[^a-zA-Z0-9-]/g, '')
-      const pdfPath = path.join(getProjectDir(id), 'reports', safeName, 'merged.pdf')
-
-      if (!fs.existsSync(pdfPath)) {
+      const pdfBuffer = await getDeepReportMerged(id, reportId, 'pdf')
+      if (!pdfBuffer) {
         return NextResponse.json(
           { success: false, error: 'PDF file not found. Use format=html for client-side PDF generation.' },
           { status: 404 }
         )
       }
 
-      const fileBuffer = fs.readFileSync(pdfPath)
       const filename = `${safeTitle}.pdf`
       const encodedFilename = encodeURIComponent(filename)
-      return new Response(fileBuffer, {
+      return new Response(new Uint8Array(pdfBuffer as Buffer), {
         headers: {
           'Content-Type': 'application/pdf',
           'Content-Disposition': `attachment; filename*=UTF-8''${encodedFilename}`,
