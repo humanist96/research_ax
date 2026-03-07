@@ -65,9 +65,12 @@ function getVisualGuidelinesBlock(): string {
 - 데이터가 불충분하면 억지로 만들지 마세요`
 }
 
+const MAX_ARTICLES_PER_SECTION = 10
+
 function formatArticlesList(articles: readonly ArticleItem[]): string {
-  return articles
-    .map((a, i) => `[${i + 1}] "${a.title}" (${a.source}, ${a.pubDate})\n${a.content}`)
+  const limited = articles.slice(0, MAX_ARTICLES_PER_SECTION)
+  return limited
+    .map((a, i) => `[${i + 1}] "${a.title}" (${a.source}, ${a.pubDate})\n${a.content.slice(0, 400)}`)
     .join('\n\n')
 }
 
@@ -110,7 +113,7 @@ ${getVisualGuidelinesBlock()}
 ### 서식과 가독성
 10. 중요한 사실에는 출처를 인라인 표기: "~로 나타났다[출처명]"
 11. 핵심 데이터는 **굵게** 표시하고, 인용 블록(>)으로 강조하세요
-12. **2000~5000자** 분량으로 충실하게 작성하세요
+12. **1500~3000자** 분량으로 핵심 위주로 작성하세요
 13. 각 하위 주제에 구체적인 사례나 데이터를 반드시 포함하세요
 
 ### 시각 요소 (필수)
@@ -163,7 +166,7 @@ ${content}
 
 ### 품질 확인
 - 마크다운 형식, 섹션 제목(##) 제외, 소제목(###) 활용
-- 2000~5000자 분량 유지
+- 1500~3000자 분량 유지
 - 근거 없는 주장 제거 또는 완화
 
 개선된 본문만 출력하세요.`
@@ -239,7 +242,7 @@ export async function analyzeOnly(
   onProgress?.('analyzing', `${articles.length}건 기사 분석 중...`, articles.length)
 
   const analysisPrompt = buildAnalysisWithGapHintsPrompt(section, articles, config)
-  const analysisContent = await callAI(analysisPrompt, { model: 'reasoning', maxTokens: 8192 })
+  const analysisContent = await callAI(analysisPrompt, { model: 'reasoning', maxTokens: 4096 })
 
   const sources: SourceReference[] = articles.map((a) => ({
     title: a.title,
@@ -273,7 +276,7 @@ export async function refineOnly(
   const contentWithoutSources = analyzeResult.content.replace(/\n\n---\n\*\*출처\*\*\n[\s\S]*$/, '')
 
   const refinePrompt = buildRefinementPrompt(section, contentWithoutSources, config)
-  const refinedContent = await callAI(refinePrompt, { model: 'fast', maxTokens: 8192 })
+  const refinedContent = await callAI(refinePrompt, { model: 'fast', maxTokens: 4096 })
 
   return {
     ...analyzeResult,

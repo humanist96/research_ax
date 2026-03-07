@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-03-07T14:34:39.211Z",
+  "lastUpdated": "2026-03-07T16:11:07.479Z",
   "activeFeatures": [
     "ai",
     "research_ax",
@@ -29,7 +29,17 @@
     "regenerate-section",
     "refine",
     "summary",
-    "conclusion"
+    "conclusion",
+    "__init__.py",
+    "notebooklm-bridge",
+    "notebook.py",
+    "generate.py",
+    "download.py",
+    "chat.py",
+    "notebooklm",
+    "generate",
+    "[taskId]",
+    "[type]"
   ],
   "primaryFeature": "ai",
   "features": {
@@ -42,7 +52,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-03-07T11:55:00.169Z",
-        "lastUpdated": "2026-03-07T14:08:04.292Z"
+        "lastUpdated": "2026-03-07T16:10:45.011Z"
       },
       "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/lib/ai/config.ts"
     },
@@ -55,9 +65,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-03-07T11:55:19.050Z",
-        "lastUpdated": "2026-03-07T14:34:39.211Z"
+        "lastUpdated": "2026-03-07T16:06:11.297Z"
       },
-      "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/hooks/useDeepResearch.ts"
+      "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/hooks/useNotebookLM.ts"
     },
     "deep-research": {
       "phase": "do",
@@ -68,9 +78,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-03-07T11:55:30.232Z",
-        "lastUpdated": "2026-03-07T14:32:40.467Z"
+        "lastUpdated": "2026-03-07T16:11:07.479Z"
       },
-      "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/lib/deep-research/section-researcher.ts"
+      "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/lib/deep-research/report-compiler.ts"
     },
     "pipeline": {
       "phase": "do",
@@ -94,7 +104,7 @@
       "documents": {},
       "timestamps": {
         "started": "2026-03-07T11:56:37.179Z",
-        "lastUpdated": "2026-03-07T12:46:50.755Z"
+        "lastUpdated": "2026-03-07T16:04:31.043Z"
       },
       "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/lib/project/store.ts"
     },
@@ -133,9 +143,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-03-07T11:57:48.193Z",
-        "lastUpdated": "2026-03-07T12:26:51.927Z"
+        "lastUpdated": "2026-03-07T16:05:47.979Z"
       },
-      "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/app/api/projects/[id]/chat/route.ts"
+      "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/app/api/projects/[id]/notebooklm/chat/route.ts"
     },
     "analyze": {
       "phase": "do",
@@ -237,9 +247,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-03-07T12:26:27.194Z",
-        "lastUpdated": "2026-03-07T13:59:57.554Z"
+        "lastUpdated": "2026-03-07T16:07:36.280Z"
       },
-      "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/components/projects/DeepResearchPanel.tsx"
+      "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/components/projects/NotebookLMPanel.tsx"
     },
     "[id]": {
       "phase": "do",
@@ -250,9 +260,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-03-07T12:26:29.368Z",
-        "lastUpdated": "2026-03-07T13:43:35.452Z"
+        "lastUpdated": "2026-03-07T16:07:54.569Z"
       },
-      "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/app/api/projects/[id]/route.ts"
+      "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/app/projects/[id]/page.tsx"
     },
     "articles": {
       "phase": "do",
@@ -396,6 +406,136 @@
         "lastUpdated": "2026-03-07T14:34:13.762Z"
       },
       "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/app/api/projects/[id]/deep-research/compile/conclusion/route.ts"
+    },
+    "__init__.py": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-03-07T16:03:36.187Z",
+        "lastUpdated": "2026-03-07T16:03:36.187Z"
+      },
+      "lastFile": "/Users/koscom/@work/research_ax/research_ax/notebooklm-bridge/services/__init__.py"
+    },
+    "notebooklm-bridge": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-03-07T16:03:45.282Z",
+        "lastUpdated": "2026-03-07T16:03:51.075Z"
+      },
+      "lastFile": "/Users/koscom/@work/research_ax/research_ax/notebooklm-bridge/main.py"
+    },
+    "notebook.py": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-03-07T16:03:59.040Z",
+        "lastUpdated": "2026-03-07T16:03:59.040Z"
+      },
+      "lastFile": "/Users/koscom/@work/research_ax/research_ax/notebooklm-bridge/services/notebook.py"
+    },
+    "generate.py": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-03-07T16:04:09.983Z",
+        "lastUpdated": "2026-03-07T16:04:09.983Z"
+      },
+      "lastFile": "/Users/koscom/@work/research_ax/research_ax/notebooklm-bridge/services/generate.py"
+    },
+    "download.py": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-03-07T16:04:19.734Z",
+        "lastUpdated": "2026-03-07T16:04:19.734Z"
+      },
+      "lastFile": "/Users/koscom/@work/research_ax/research_ax/notebooklm-bridge/services/download.py"
+    },
+    "chat.py": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-03-07T16:04:23.185Z",
+        "lastUpdated": "2026-03-07T16:04:23.185Z"
+      },
+      "lastFile": "/Users/koscom/@work/research_ax/research_ax/notebooklm-bridge/services/chat.py"
+    },
+    "notebooklm": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-03-07T16:04:57.881Z",
+        "lastUpdated": "2026-03-07T16:04:57.881Z"
+      },
+      "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/app/api/projects/[id]/notebooklm/route.ts"
+    },
+    "generate": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-03-07T16:05:11.894Z",
+        "lastUpdated": "2026-03-07T16:05:11.894Z"
+      },
+      "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/app/api/projects/[id]/notebooklm/generate/route.ts"
+    },
+    "[taskId]": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-03-07T16:05:27.428Z",
+        "lastUpdated": "2026-03-07T16:05:27.428Z"
+      },
+      "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/app/api/projects/[id]/notebooklm/tasks/[taskId]/route.ts"
+    },
+    "[type]": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-03-07T16:05:39.578Z",
+        "lastUpdated": "2026-03-07T16:05:39.578Z"
+      },
+      "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/app/api/projects/[id]/notebooklm/artifacts/[type]/route.ts"
     }
   },
   "pipeline": {
@@ -406,7 +546,7 @@
   "session": {
     "startedAt": "2026-03-07T11:16:13.174Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-03-07T14:34:39.211Z"
+    "lastActivity": "2026-03-07T16:11:07.479Z"
   },
   "history": [
     {
@@ -1384,6 +1524,180 @@
     {
       "timestamp": "2026-03-07T14:34:39.211Z",
       "feature": "research_ax",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-07T16:03:36.187Z",
+      "feature": "__init__.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-07T16:03:45.282Z",
+      "feature": "notebooklm-bridge",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-07T16:03:51.075Z",
+      "feature": "notebooklm-bridge",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-07T16:03:59.040Z",
+      "feature": "notebook.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-07T16:04:09.983Z",
+      "feature": "generate.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-07T16:04:16.943Z",
+      "feature": "research_ax",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-07T16:04:19.734Z",
+      "feature": "download.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-07T16:04:23.034Z",
+      "feature": "project",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-07T16:04:23.185Z",
+      "feature": "chat.py",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-07T16:04:31.043Z",
+      "feature": "project",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-07T16:04:57.881Z",
+      "feature": "notebooklm",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-07T16:05:11.894Z",
+      "feature": "generate",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-07T16:05:27.428Z",
+      "feature": "[taskId]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-07T16:05:39.578Z",
+      "feature": "[type]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-07T16:05:47.979Z",
+      "feature": "chat",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-07T16:06:11.297Z",
+      "feature": "research_ax",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-07T16:07:36.280Z",
+      "feature": "projects",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-07T16:07:49.666Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-07T16:07:54.569Z",
+      "feature": "[id]",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-07T16:10:42.254Z",
+      "feature": "deep-research",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-07T16:10:43.605Z",
+      "feature": "deep-research",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-07T16:10:45.011Z",
+      "feature": "ai",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-07T16:10:51.768Z",
+      "feature": "deep-research",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-07T16:10:53.040Z",
+      "feature": "deep-research",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-07T16:10:54.440Z",
+      "feature": "deep-research",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-07T16:11:00.078Z",
+      "feature": "deep-research",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-07T16:11:01.296Z",
+      "feature": "deep-research",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-07T16:11:06.093Z",
+      "feature": "deep-research",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-07T16:11:07.479Z",
+      "feature": "deep-research",
       "phase": "do",
       "action": "updated"
     }

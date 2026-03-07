@@ -4,6 +4,7 @@ import * as crypto from 'crypto'
 import type { ResearchProject, ProjectStatus, ConversationTurn, ProjectConfig } from '@/types'
 import type { ReportIndex, Article, AnalyzedArticle, CollectionLog } from '@/types'
 import type { DeepReportMeta } from '@/lib/deep-research/types'
+import type { ProjectNotebookLM } from '@/types/notebooklm'
 import { getStorage } from '@/lib/storage'
 
 function isVercelStorage(): boolean {
@@ -299,6 +300,19 @@ export async function saveDeepReportMerged(projectId: string, reportId: string, 
   const dir = deepReportDir(projectId, reportId)
   ensureDir(dir)
   fs.writeFileSync(path.join(dir, filename), content)
+}
+
+// --- NotebookLM ---
+
+export async function getProjectNotebookLM(projectId: string): Promise<ProjectNotebookLM | null> {
+  if (isVercelStorage()) return getStorage().getJSON<ProjectNotebookLM | null>(`project:${projectId}:notebooklm`, null)
+  return readJsonSafe<ProjectNotebookLM | null>(path.join(projectDir(projectId), 'notebooklm.json'), null)
+}
+
+export async function saveProjectNotebookLM(projectId: string, data: ProjectNotebookLM): Promise<void> {
+  if (isVercelStorage()) { await getStorage().setJSON(`project:${projectId}:notebooklm`, data); return }
+  ensureDir(projectDir(projectId))
+  writeJson(path.join(projectDir(projectId), 'notebooklm.json'), data)
 }
 
 export async function getDeepReportMerged(projectId: string, reportId: string, format: 'md' | 'pdf'): Promise<Buffer | string | null> {

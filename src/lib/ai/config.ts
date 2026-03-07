@@ -11,7 +11,7 @@ const DEFAULT_MODELS: AIModelConfig = {
 }
 
 const DEFAULT_MAX_TOKENS: Record<string, number> = {
-  reasoning: 16384,
+  reasoning: 8192,
   general: 8192,
   fast: 4096,
 }

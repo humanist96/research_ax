@@ -10,6 +10,7 @@ import { StatsCards } from '@/components/dashboard/StatsCards'
 import { RecentNews } from '@/components/dashboard/RecentNews'
 import { CategoryChart } from '@/components/dashboard/CategoryChart'
 import { DeepResearchPanel } from '@/components/projects/DeepResearchPanel'
+import { NotebookLMPanel } from '@/components/projects/NotebookLMPanel'
 import { PageSkeleton } from '@/components/ui/Skeleton'
 
 export default function ProjectDashboardPage() {
@@ -118,6 +119,10 @@ export default function ProjectDashboardPage() {
             onStatusChange={(status) => {
               setProject({ ...project, status })
             }}
+          />
+          <NotebookLMPanel
+            projectId={id}
+            reportReady={project.status === 'complete'}
           />
         </>
       )}

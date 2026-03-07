@@ -5,7 +5,7 @@ export async function filterRelevantArticles<T extends { readonly title: string;
   section: OutlineSection,
   articles: readonly T[],
 ): Promise<readonly T[]> {
-  const MIN_ARTICLES = 3
+  const MIN_ARTICLES = 5
   const RELEVANCE_THRESHOLD = 6
 
   if (articles.length <= MIN_ARTICLES) {
@@ -47,7 +47,7 @@ ${titlesBlock}
 JSON 블록만 출력하세요.`
 
   try {
-    const raw = await callAI(prompt, { model: 'general', temperature: 0.3 })
+    const raw = await callAI(prompt, { model: 'fast', temperature: 0.3 })
     const jsonMatch = raw.match(/```json\s*([\s\S]*?)\s*```/) ?? raw.match(/\{[\s\S]*\}/)
 
     if (!jsonMatch) {

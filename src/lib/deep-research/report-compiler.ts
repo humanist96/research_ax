@@ -95,7 +95,7 @@ export async function generateExecutiveSummary(
   config: ProjectConfig,
 ): Promise<string> {
   const prompt = buildExecutiveSummaryPrompt(outline, results, config)
-  return callAI(prompt, { model: 'reasoning', maxTokens: 8192 })
+  return callAI(prompt, { model: 'reasoning', maxTokens: 4096 })
 }
 
 export async function generateConclusion(
@@ -104,7 +104,7 @@ export async function generateConclusion(
   config: ProjectConfig,
 ): Promise<string> {
   const prompt = buildConclusionPrompt(outline, results, config)
-  return callAI(prompt, { model: 'reasoning', maxTokens: 8192 })
+  return callAI(prompt, { model: 'reasoning', maxTokens: 4096 })
 }
 
 function buildGlobalReferences(allSources: readonly SourceReference[]): string {

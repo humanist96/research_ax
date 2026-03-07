@@ -41,6 +41,15 @@
     },
     "src/app/api/projects/[id]/collect/route.ts": {
       "maxDuration": 60
+    },
+    "src/app/api/projects/[id]/notebooklm/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/projects/[id]/notebooklm/generate/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/projects/[id]/notebooklm/chat/route.ts": {
+      "maxDuration": 60
     }
   }
 }
