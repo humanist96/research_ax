@@ -12,7 +12,7 @@ function buildExecutiveSummaryPrompt(
   config: ProjectConfig,
 ): string {
   const sectionSummaries = results
-    .map((s) => `- **${s.title}**: ${s.content.slice(0, 800)}...`)
+    .map((s) => `- **${s.title}**: ${s.content.slice(0, 1200)}...`)
     .join('\n')
 
   return `당신은 "${config.reportTitle}" 보고서의 핵심 요약(Executive Summary)을 작성하는 전문 편집자입니다.
@@ -26,13 +26,23 @@ function buildExecutiveSummaryPrompt(
 ${sectionSummaries}
 
 ## 작성 규칙
-1. 보고서 전체의 핵심 발견과 시사점을 3~5문장으로 압축하세요
-2. 가장 중요한 수치와 트렌드를 포함하세요
-3. 독자가 이 요약만 읽어도 보고서의 핵심을 파악할 수 있어야 합니다
-4. **800~1500자** 분량으로 작성하세요
-5. 마크다운 형식이되, 제목(##)은 포함하지 마세요
-6. **핵심 지표 요약 표**: 보고서에서 도출된 주요 수치/지표를 마크다운 표로 정리하세요
-7. Mermaid 다이어그램은 사용하지 마세요 (이 섹션은 텍스트+표 위주)
+
+### 구조
+1. 보고서 전체의 핵심 발견과 시사점을 종합적으로 정리하세요
+2. 소제목(###) 없이 자연스러운 문단으로 구성하세요
+3. **1200~2500자** 분량으로 충실하게 작성하세요
+4. 마크다운 형식이되, 제목(##)은 포함하지 마세요
+
+### 내용
+5. 가장 중요한 **수치와 트렌드를 우선 배치**하세요
+6. 독자가 이 요약만 읽어도 보고서의 핵심을 파악할 수 있어야 합니다
+7. 핵심 키워드와 수치는 **굵게** 강조하세요
+8. 가장 중요한 인사이트는 인용 블록(>)으로 강조하세요
+
+### 시각 요소 (필수)
+9. **핵심 지표 요약 표**: 보고서에서 도출된 주요 수치/지표를 마크다운 표로 정리하세요
+   - 지표명 | 현황/수치 | 변화/추이 | 시사점 형태
+10. Mermaid 다이어그램은 사용하지 마세요 (이 섹션은 텍스트+표 위주)
 
 마크다운 본문만 출력하세요.`
 }
@@ -43,7 +53,7 @@ function buildConclusionPrompt(
   config: ProjectConfig,
 ): string {
   const sectionSummaries = results
-    .map((s) => `- **${s.title}**: ${s.content.slice(0, 800)}...`)
+    .map((s) => `- **${s.title}**: ${s.content.slice(0, 1200)}...`)
     .join('\n')
 
   return `당신은 "${config.reportTitle}" 보고서의 결론 및 전망을 작성하는 전문 편집자입니다.
@@ -55,19 +65,26 @@ function buildConclusionPrompt(
 ## 각 섹션 요약
 ${sectionSummaries}
 
-## 시각적 요소 활용 지침
-- 핵심 시사점이나 전망을 **마크다운 표**로 정리하세요 (예: 단기/중기/장기 전망)
-- 향후 트렌드나 영향 관계가 있으면 **Mermaid flowchart**로 표현하세요
-- Mermaid 문법 규칙: 한국어 텍스트는 큰따옴표 필수 A["한국어 텍스트"], 노드 10개 이하
-- 데이터가 불충분하면 억지로 다이어그램을 만들지 마세요
-
 ## 작성 규칙
-1. 보고서의 핵심 발견을 종합하세요
-2. 향후 주목해야 할 트렌드와 전망을 제시하세요
-3. 실행 가능한 시사점(actionable insights)을 포함하세요
-4. **800~1500자** 분량으로 작성하세요
-5. 마크다운 형식이되, 제목(##)은 포함하지 마세요
-6. 표나 다이어그램을 활용하여 전망과 시사점을 구조화하세요
+
+### 구조
+1. 소제목(###)을 활용하여 "종합 분석", "전망", "시사점" 등으로 구조화하세요
+2. **1200~2500자** 분량으로 충실하게 작성하세요
+3. 마크다운 형식이되, 제목(##)은 포함하지 마세요
+
+### 내용
+4. 보고서의 핵심 발견을 종합하세요
+5. 향후 주목해야 할 트렌드와 전망을 제시하세요
+6. **실행 가능한 시사점(actionable insights)**을 구체적으로 포함하세요
+7. 핵심 키워드와 수치는 **굵게** 강조하세요
+8. 가장 중요한 전망은 인용 블록(>)으로 강조하세요
+
+### 시각 요소 (필수)
+9. **전망 요약 표** 필수: 단기/중기/장기 전망 또는 주요 시사점을 마크다운 표로 정리
+   - 구분 | 전망/시사점 | 근거 | 권장 대응 형태
+10. 향후 트렌드나 영향 관계가 있으면 **Mermaid flowchart**로 표현하세요
+    - Mermaid 문법: 한국어 텍스트는 큰따옴표 필수 A["한국어 텍스트"], 노드 10개 이하
+    - 데이터가 불충분하면 억지로 만들지 마세요
 
 마크다운 본문만 출력하세요.`
 }
@@ -78,7 +95,7 @@ export async function generateExecutiveSummary(
   config: ProjectConfig,
 ): Promise<string> {
   const prompt = buildExecutiveSummaryPrompt(outline, results, config)
-  return callAI(prompt, { model: 'reasoning' })
+  return callAI(prompt, { model: 'reasoning', maxTokens: 8192 })
 }
 
 export async function generateConclusion(
@@ -87,7 +104,7 @@ export async function generateConclusion(
   config: ProjectConfig,
 ): Promise<string> {
   const prompt = buildConclusionPrompt(outline, results, config)
-  return callAI(prompt, { model: 'reasoning' })
+  return callAI(prompt, { model: 'reasoning', maxTokens: 8192 })
 }
 
 function buildGlobalReferences(allSources: readonly SourceReference[]): string {

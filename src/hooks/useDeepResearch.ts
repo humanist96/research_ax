@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import type { ReportOutline, SectionResearchResult, OutlineSection } from '@/lib/deep-research/types'
 
 export type ResearchPhase =
@@ -24,6 +24,7 @@ export interface SectionState {
   readonly articles?: readonly ArticleData[]
   readonly result?: SectionResearchResult
   readonly error?: string
+  readonly retryCount?: number
 }
 
 interface ArticleData {
@@ -68,15 +69,74 @@ export interface UseDeepResearchReturn {
   readonly isRegeneratingOutline: boolean
   readonly startResearch: (outline: ReportOutline, keywordBlacklist?: readonly string[]) => Promise<void>
   readonly retrySection: (sectionId: string) => Promise<void>
+  readonly retryAllFailed: () => Promise<void>
+  readonly skipFailedAndCompile: () => Promise<void>
   readonly abort: () => void
   readonly reset: () => void
   readonly completedCount: number
   readonly totalCount: number
+  readonly failedCount: number
   readonly estimatedTimeLeft: number | null
 }
 
 const SEARCH_CONCURRENCY = 3
 const ANALYZE_CONCURRENCY = 2
+const MAX_AUTO_RETRY = 2
+const RETRY_BASE_DELAY_MS = 2000
+
+function storageKey(projectId: string): string {
+  return `deep-research:${projectId}`
+}
+
+interface PersistedState {
+  readonly phase: ResearchPhase
+  readonly sections: readonly SectionState[]
+  readonly outline: ReportOutline | null
+  readonly reportId: string | null
+  readonly internalReportId: string | null
+}
+
+function saveProgress(projectId: string, state: PersistedState): void {
+  try {
+    const serializable = {
+      ...state,
+      sections: state.sections.map((s) => ({
+        id: s.id,
+        title: s.title,
+        status: s.status,
+        sourcesFound: s.sourcesFound,
+        message: s.message,
+        error: s.error,
+        retryCount: s.retryCount,
+      })),
+    }
+    localStorage.setItem(storageKey(projectId), JSON.stringify(serializable))
+  } catch {
+    // localStorage full or unavailable — ignore
+  }
+}
+
+function loadProgress(projectId: string): PersistedState | null {
+  try {
+    const raw = localStorage.getItem(storageKey(projectId))
+    if (!raw) return null
+    return JSON.parse(raw) as PersistedState
+  } catch {
+    return null
+  }
+}
+
+function clearProgress(projectId: string): void {
+  try {
+    localStorage.removeItem(storageKey(projectId))
+  } catch {
+    // ignore
+  }
+}
+
+async function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
 
 export function useDeepResearch(projectId: string): UseDeepResearchReturn {
   const [phase, setPhase] = useState<ResearchPhase>('idle')
@@ -89,6 +149,36 @@ export function useDeepResearch(projectId: string): UseDeepResearchReturn {
   const abortRef = useRef<AbortController | null>(null)
   const sectionTimesRef = useRef<number[]>([])
   const reportIdRef = useRef<string | null>(null)
+  const outlineRef = useRef<ReportOutline | null>(null)
+  const articlesMapRef = useRef<Map<string, readonly ArticleData[]>>(new Map())
+  const resultsMapRef = useRef<Map<string, SectionResearchResult>>(new Map())
+
+  // Restore progress from localStorage on mount
+  useEffect(() => {
+    const saved = loadProgress(projectId)
+    if (!saved || saved.phase === 'idle') return
+
+    // Only restore completed/error states (don't resume in-progress)
+    if (saved.phase === 'complete' || saved.phase === 'error') {
+      setPhase(saved.phase)
+      setSections(saved.sections as SectionState[])
+      setOutline(saved.outline)
+      setReportId(saved.reportId)
+      reportIdRef.current = saved.internalReportId
+    }
+  }, [projectId])
+
+  // Persist progress on meaningful state changes
+  useEffect(() => {
+    if (phase === 'idle') return
+    saveProgress(projectId, {
+      phase,
+      sections,
+      outline,
+      reportId,
+      internalReportId: reportIdRef.current,
+    })
+  }, [projectId, phase, sections, outline, reportId])
 
   const updateSection = useCallback((sectionId: string, updates: Partial<SectionState>) => {
     setSections((prev) =>
@@ -108,6 +198,7 @@ export function useDeepResearch(projectId: string): UseDeepResearchReturn {
       const data = await res.json()
       if (!data.success) throw new Error(data.error ?? `HTTP ${res.status}`)
       setOutline(data.data)
+      outlineRef.current = data.data
       setPhase('editing_outline')
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
@@ -122,6 +213,7 @@ export function useDeepResearch(projectId: string): UseDeepResearchReturn {
       const data = await res.json()
       if (!data.success) throw new Error(data.error ?? `HTTP ${res.status}`)
       setOutline(data.data)
+      outlineRef.current = data.data
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
     } finally {
@@ -146,22 +238,33 @@ export function useDeepResearch(projectId: string): UseDeepResearchReturn {
     return json.data?.articles ?? []
   }, [projectId])
 
-  // Run analysis for a single section
+  // Run analysis for a single section with auto-retry
   const analyzeOneSection = useCallback(async (
     section: OutlineSection,
     articles: readonly ArticleData[],
     rId: string,
     signal: AbortSignal,
+    retryAttempt = 0,
   ): Promise<SectionResearchResult> => {
-    const res = await fetch(`/api/projects/${projectId}/deep-research/section/analyze`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ section, articles, reportId: rId }),
-      signal,
-    })
-    const json: AnalyzeResponse = await res.json()
-    if (!json.success) throw new Error(json.error ?? 'Analysis failed')
-    return json.data!
+    try {
+      const res = await fetch(`/api/projects/${projectId}/deep-research/section/analyze`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ section, articles, reportId: rId }),
+        signal,
+      })
+      const json: AnalyzeResponse = await res.json()
+      if (!json.success) throw new Error(json.error ?? 'Analysis failed')
+      return json.data!
+    } catch (err) {
+      if (signal.aborted) throw err
+      if (retryAttempt < MAX_AUTO_RETRY) {
+        const backoff = RETRY_BASE_DELAY_MS * Math.pow(2, retryAttempt)
+        await delay(backoff)
+        return analyzeOneSection(section, articles, rId, signal, retryAttempt + 1)
+      }
+      throw err
+    }
   }, [projectId])
 
   // Run compile (executive summary + conclusion + merge)
@@ -198,7 +301,7 @@ export function useDeepResearch(projectId: string): UseDeepResearchReturn {
     await Promise.all(workers)
   }, [])
 
-  // Main orchestration: search all → analyze all → compile
+  // Main orchestration: search all -> analyze all -> compile
   const startResearch = useCallback(async (
     editedOutline: ReportOutline,
     keywordBlacklist?: readonly string[],
@@ -206,6 +309,9 @@ export function useDeepResearch(projectId: string): UseDeepResearchReturn {
     const controller = new AbortController()
     abortRef.current = controller
     sectionTimesRef.current = []
+    outlineRef.current = editedOutline
+    articlesMapRef.current = new Map()
+    resultsMapRef.current = new Map()
 
     setError(null)
     setReportId(null)
@@ -220,6 +326,7 @@ export function useDeepResearch(projectId: string): UseDeepResearchReturn {
       title: s.title,
       status: 'pending' as const,
       message: '대기',
+      retryCount: 0,
     }))
     setSections(initialSections)
 
@@ -234,7 +341,7 @@ export function useDeepResearch(projectId: string): UseDeepResearchReturn {
       // === PHASE: SEARCHING ===
       setPhase('searching')
 
-      const articlesMap = new Map<string, readonly ArticleData[]>()
+      const articlesMap = articlesMapRef.current
 
       await runWithConcurrency(editedOutline.sections, SEARCH_CONCURRENCY, async (section) => {
         if (controller.signal.aborted) return
@@ -262,7 +369,7 @@ export function useDeepResearch(projectId: string): UseDeepResearchReturn {
       // === PHASE: ANALYZING ===
       setPhase('analyzing')
 
-      const resultsMap = new Map<string, SectionResearchResult>()
+      const resultsMap = resultsMapRef.current
 
       await runWithConcurrency(editedOutline.sections, ANALYZE_CONCURRENCY, async (section) => {
         if (controller.signal.aborted) return
@@ -310,6 +417,7 @@ export function useDeepResearch(projectId: string): UseDeepResearchReturn {
       const finalReportId = await compileReport(rId, editedOutline, sectionResults, controller.signal)
       setReportId(finalReportId)
       setPhase('complete')
+      clearProgress(projectId)
     } catch (err) {
       if (controller.signal.aborted) return
       const msg = err instanceof Error ? err.message : String(err)
@@ -320,9 +428,10 @@ export function useDeepResearch(projectId: string): UseDeepResearchReturn {
 
   // Retry a single failed section
   const retrySection = useCallback(async (sectionId: string) => {
-    if (!outline || !reportIdRef.current) return
+    const currentOutline = outlineRef.current ?? outline
+    if (!currentOutline || !reportIdRef.current) return
 
-    const section = outline.sections.find((s) => s.id === sectionId)
+    const section = currentOutline.sections.find((s) => s.id === sectionId)
     if (!section) return
 
     const controller = new AbortController()
@@ -331,21 +440,70 @@ export function useDeepResearch(projectId: string): UseDeepResearchReturn {
     const currentSection = sections.find((s) => s.id === sectionId)
     let articles = currentSection?.articles
 
+    const retryCount = (currentSection?.retryCount ?? 0) + 1
+    updateSection(sectionId, { retryCount })
+
     try {
       if (!articles || articles.length === 0) {
         updateSection(sectionId, { status: 'searching', message: '재검색 중...', error: undefined })
         articles = await searchSection(section, controller.signal)
+        articlesMapRef.current.set(sectionId, articles)
         updateSection(sectionId, { status: 'pending', sourcesFound: articles.length, message: `${articles.length}건`, articles })
       }
 
       updateSection(sectionId, { status: 'analyzing', message: '분석 중...', error: undefined })
       const result = await analyzeOneSection(section, articles, reportIdRef.current, controller.signal)
+      resultsMapRef.current.set(sectionId, result)
       updateSection(sectionId, { status: 'complete', message: '완료', result })
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
       updateSection(sectionId, { status: 'error', message: msg, error: msg })
     }
   }, [outline, sections, updateSection, searchSection, analyzeOneSection])
+
+  // Retry all failed sections at once
+  const retryAllFailed = useCallback(async () => {
+    const currentOutline = outlineRef.current ?? outline
+    if (!currentOutline || !reportIdRef.current) return
+
+    const failedSections = sections.filter((s) => s.status === 'error')
+    for (const s of failedSections) {
+      await retrySection(s.id)
+    }
+  }, [outline, sections, retrySection])
+
+  // Skip failed sections and compile with completed ones
+  const skipFailedAndCompile = useCallback(async () => {
+    const currentOutline = outlineRef.current ?? outline
+    const rId = reportIdRef.current
+    if (!currentOutline || !rId) return
+
+    const resultsMap = resultsMapRef.current
+    const sectionResults = currentOutline.sections
+      .map((s) => resultsMap.get(s.id))
+      .filter((r): r is SectionResearchResult => r !== undefined)
+
+    if (sectionResults.length === 0) {
+      setError('완료된 섹션이 없어 보고서를 생성할 수 없습니다')
+      return
+    }
+
+    const controller = new AbortController()
+    abortRef.current = controller
+
+    try {
+      setPhase('compiling')
+      const finalReportId = await compileReport(rId, currentOutline, sectionResults, controller.signal)
+      setReportId(finalReportId)
+      setPhase('complete')
+      clearProgress(projectId)
+    } catch (err) {
+      if (controller.signal.aborted) return
+      const msg = err instanceof Error ? err.message : String(err)
+      setError(msg)
+      setPhase('error')
+    }
+  }, [outline, projectId, compileReport])
 
   const abort = useCallback(() => {
     abortRef.current?.abort()
@@ -362,18 +520,23 @@ export function useDeepResearch(projectId: string): UseDeepResearchReturn {
     setError(null)
     sectionTimesRef.current = []
     reportIdRef.current = null
-  }, [])
+    outlineRef.current = null
+    articlesMapRef.current = new Map()
+    resultsMapRef.current = new Map()
+    clearProgress(projectId)
+  }, [projectId])
 
   const completedCount = sections.filter((s) => s.status === 'complete').length
   const totalCount = sections.length
+  const failedCount = sections.filter((s) => s.status === 'error').length
 
   // Estimate time left based on average section processing time
   const estimatedTimeLeft = (() => {
     const times = sectionTimesRef.current
     if (times.length === 0 || phase !== 'analyzing') return null
     const avg = times.reduce((a, b) => a + b, 0) / times.length
-    const remaining = totalCount - completedCount
-    return Math.round(avg * remaining)
+    const remaining = totalCount - completedCount - failedCount
+    return Math.round(avg * Math.max(remaining, 0))
   })()
 
   return {
@@ -387,10 +550,13 @@ export function useDeepResearch(projectId: string): UseDeepResearchReturn {
     isRegeneratingOutline,
     startResearch,
     retrySection,
+    retryAllFailed,
+    skipFailedAndCompile,
     abort,
     reset,
     completedCount,
     totalCount,
+    failedCount,
     estimatedTimeLeft,
   }
 }

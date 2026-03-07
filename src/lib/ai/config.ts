@@ -6,14 +6,14 @@ export interface AIModelConfig {
 
 const DEFAULT_MODELS: AIModelConfig = {
   reasoning: 'gpt-4o',
-  general: 'gpt-4o-mini',
+  general: 'gpt-4o',
   fast: 'gpt-4o-mini',
 }
 
 const DEFAULT_MAX_TOKENS: Record<string, number> = {
-  reasoning: 8192,
-  general: 4096,
-  fast: 2048,
+  reasoning: 16384,
+  general: 8192,
+  fast: 4096,
 }
 
 export type AIModelRole = keyof AIModelConfig
