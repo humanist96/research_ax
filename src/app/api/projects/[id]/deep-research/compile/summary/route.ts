@@ -1,0 +1,32 @@
+import { NextRequest } from 'next/server'
+import { getProject, saveDeepReportSection } from '@/lib/project/store'
+import { generateExecutiveSummary } from '@/lib/deep-research/report-compiler'
+import type { ReportOutline, SectionResearchResult } from '@/lib/deep-research/types'
+
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params
+  const project = await getProject(id)
+
+  if (!project?.config) {
+    return Response.json({ success: false, error: 'Project or config not found' }, { status: 404 })
+  }
+
+  try {
+    const body = await request.json() as {
+      reportId: string
+      outline: ReportOutline
+      sectionResults: SectionResearchResult[]
+    }
+
+    const execSummary = await generateExecutiveSummary(body.outline, body.sectionResults, project.config)
+    await saveDeepReportSection(id, body.reportId, 'executive-summary', execSummary)
+
+    return Response.json({ success: true, data: { content: execSummary } })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    return Response.json({ success: false, error: message }, { status: 500 })
+  }
+}

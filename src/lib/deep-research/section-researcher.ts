@@ -218,12 +218,10 @@ export async function searchAndFilterSection(
 }
 
 /**
- * Phase 2: analysis pipeline (2 AI calls with gpt-4o).
- * 1. Deep analysis with self-verification (Reasoning/gpt-4o, ~30s)
- * 2. Refinement with visual element check (General/gpt-4o, ~15s)
- * Takes pre-filtered articles from searchAndFilterSection.
+ * Step 1 only: Deep analysis with gpt-4o (single AI call, fits in 60s).
+ * Returns raw analysis result without refinement.
  */
-export async function analyzeSection(
+export async function analyzeOnly(
   section: OutlineSection,
   articles: readonly ArticleItem[],
   config: ProjectConfig,
@@ -240,17 +238,9 @@ export async function analyzeSection(
 
   onProgress?.('analyzing', `${articles.length}건 기사 분석 중...`, articles.length)
 
-  // Step 1: Deep analysis with integrated self-verification (gpt-4o, high tokens)
   const analysisPrompt = buildAnalysisWithGapHintsPrompt(section, articles, config)
   const analysisContent = await callAI(analysisPrompt, { model: 'reasoning', maxTokens: 8192 })
 
-  // Step 2: Refinement with visual element reinforcement (gpt-4o)
-  onProgress?.('refining', '품질 개선 중...')
-
-  const refinePrompt = buildRefinementPrompt(section, analysisContent, config)
-  const refinedContent = await callAI(refinePrompt, { model: 'general', maxTokens: 8192 })
-
-  // Build source references
   const sources: SourceReference[] = articles.map((a) => ({
     title: a.title,
     url: a.link,
@@ -258,14 +248,53 @@ export async function analyzeSection(
     publishedAt: a.pubDate,
   }))
 
-  const finalContent = refinedContent + buildSourceReferences(sources)
-
   return {
     sectionId: section.id,
     title: section.title,
-    content: finalContent,
+    content: analysisContent + buildSourceReferences(sources),
     sources,
   }
+}
+
+/**
+ * Step 2 only: Refinement with gpt-4o-mini (fast, fits in 60s).
+ * Takes the raw analysis result and polishes it.
+ */
+export async function refineOnly(
+  section: OutlineSection,
+  analyzeResult: SectionResearchResult,
+  config: ProjectConfig,
+  onProgress?: SectionProgress,
+): Promise<SectionResearchResult> {
+  onProgress?.('refining', '품질 개선 중...')
+
+  // Strip source references before refinement, re-attach after
+  const sourceBlock = buildSourceReferences(analyzeResult.sources)
+  const contentWithoutSources = analyzeResult.content.replace(/\n\n---\n\*\*출처\*\*\n[\s\S]*$/, '')
+
+  const refinePrompt = buildRefinementPrompt(section, contentWithoutSources, config)
+  const refinedContent = await callAI(refinePrompt, { model: 'fast', maxTokens: 8192 })
+
+  return {
+    ...analyzeResult,
+    content: refinedContent + sourceBlock,
+  }
+}
+
+/**
+ * Full analysis pipeline (2 AI calls): analyze + refine.
+ * Use for local dev where timeout is not an issue.
+ * On Vercel, use analyzeOnly + refineOnly separately via their own endpoints.
+ */
+export async function analyzeSection(
+  section: OutlineSection,
+  articles: readonly ArticleItem[],
+  config: ProjectConfig,
+  onProgress?: SectionProgress,
+): Promise<SectionResearchResult> {
+  const raw = await analyzeOnly(section, articles, config, onProgress)
+  if (raw.sources.length === 0) return raw
+  return refineOnly(section, raw, config, onProgress)
 }
 
 /**

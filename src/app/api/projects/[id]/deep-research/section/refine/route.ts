@@ -1,8 +1,7 @@
 import { NextRequest } from 'next/server'
 import { getProject, saveDeepReportSection } from '@/lib/project/store'
-import { analyzeOnly } from '@/lib/deep-research/section-researcher'
-import type { ArticleItem } from '@/lib/deep-research/section-researcher'
-import type { OutlineSection } from '@/lib/deep-research/types'
+import { refineOnly } from '@/lib/deep-research/section-researcher'
+import type { OutlineSection, SectionResearchResult } from '@/lib/deep-research/types'
 
 export async function POST(
   request: NextRequest,
@@ -22,18 +21,18 @@ export async function POST(
   try {
     const body = await request.json() as {
       section: OutlineSection
-      articles: ArticleItem[]
+      analyzeResult: SectionResearchResult
       reportId: string
     }
 
-    if (!body.section || !body.articles || !body.reportId) {
-      return Response.json({ success: false, error: 'section, articles, and reportId are required' }, { status: 400 })
+    if (!body.section || !body.analyzeResult || !body.reportId) {
+      return Response.json({ success: false, error: 'section, analyzeResult, and reportId are required' }, { status: 400 })
     }
 
-    // Step 1 only: deep analysis with gpt-4o (no refinement)
-    const result = await analyzeOnly(body.section, body.articles, project.config)
+    // Step 2: refinement with gpt-4o-mini (fast)
+    const result = await refineOnly(body.section, body.analyzeResult, project.config)
 
-    // Save section content
+    // Overwrite section content with refined version
     await saveDeepReportSection(id, body.reportId, body.section.id, result.content)
 
     return Response.json({

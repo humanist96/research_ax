@@ -1,0 +1,1071 @@
+{
+  "timestamp": "2026-03-07T12:33:53.055Z",
+  "reason": "compaction",
+  "status": {
+    "version": "2.0",
+    "lastUpdated": "2026-03-07T12:33:04.207Z",
+    "activeFeatures": [
+      "ai",
+      "research_ax",
+      "deep-research",
+      "pipeline",
+      "project",
+      "scripts",
+      "finalize",
+      "chat",
+      "analyze",
+      "storage",
+      "download",
+      "search",
+      "compile",
+      "collect",
+      "report",
+      "projects",
+      "[id]",
+      "articles",
+      "excluded",
+      "reports",
+      "[reportId]",
+      "progress",
+      "review-articles",
+      "outline",
+      "regenerate-section"
+    ],
+    "primaryFeature": "ai",
+    "features": {
+      "ai": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-07T11:55:00.169Z",
+          "lastUpdated": "2026-03-07T11:55:13.276Z"
+        },
+        "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/lib/ai/index.ts"
+      },
+      "research_ax": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-07T11:55:19.050Z",
+          "lastUpdated": "2026-03-07T12:02:02.112Z"
+        },
+        "lastFile": "/Users/koscom/@work/research_ax/research_ax/next.config.ts"
+      },
+      "deep-research": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-07T11:55:30.232Z",
+          "lastUpdated": "2026-03-07T12:32:49.934Z"
+        },
+        "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/lib/deep-research/report-compiler.ts"
+      },
+      "pipeline": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-07T11:56:08.088Z",
+          "lastUpdated": "2026-03-07T12:31:16.684Z"
+        },
+        "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/lib/pipeline/orchestrator.ts"
+      },
+      "project": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-07T11:56:37.179Z",
+          "lastUpdated": "2026-03-07T12:25:36.653Z"
+        },
+        "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/lib/project/store.ts"
+      },
+      "scripts": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-07T11:57:34.081Z",
+          "lastUpdated": "2026-03-07T11:57:34.081Z"
+        },
+        "lastFile": "/Users/koscom/@work/research_ax/research_ax/scripts/analyze.ts"
+      },
+      "finalize": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-07T11:57:42.912Z",
+          "lastUpdated": "2026-03-07T12:26:59.611Z"
+        },
+        "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/app/api/projects/[id]/finalize/route.ts"
+      },
+      "chat": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-07T11:57:48.193Z",
+          "lastUpdated": "2026-03-07T12:26:51.927Z"
+        },
+        "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/app/api/projects/[id]/chat/route.ts"
+      },
+      "analyze": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-07T11:58:11.420Z",
+          "lastUpdated": "2026-03-07T12:29:54.339Z"
+        },
+        "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/app/api/projects/[id]/deep-research/section/analyze/route.ts"
+      },
+      "storage": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-07T11:58:22.498Z",
+          "lastUpdated": "2026-03-07T12:20:14.299Z"
+        },
+        "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/lib/storage/vercel.ts"
+      },
+      "download": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-07T12:00:58.130Z",
+          "lastUpdated": "2026-03-07T12:29:00.060Z"
+        },
+        "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/app/api/projects/[id]/reports/[reportId]/download/route.ts"
+      },
+      "search": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-07T12:01:30.088Z",
+          "lastUpdated": "2026-03-07T12:29:58.011Z"
+        },
+        "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/app/api/projects/[id]/deep-research/section/search/route.ts"
+      },
+      "compile": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-07T12:01:46.549Z",
+          "lastUpdated": "2026-03-07T12:33:04.207Z"
+        },
+        "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/app/api/projects/[id]/deep-research/compile/route.ts"
+      },
+      "collect": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-07T12:03:42.534Z",
+          "lastUpdated": "2026-03-07T12:27:17.248Z"
+        },
+        "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/app/api/projects/[id]/collect/route.ts"
+      },
+      "report": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-07T12:04:00.420Z",
+          "lastUpdated": "2026-03-07T12:28:00.122Z"
+        },
+        "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/app/api/projects/[id]/report/route.ts"
+      },
+      "projects": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-07T12:26:27.194Z",
+          "lastUpdated": "2026-03-07T12:26:28.461Z"
+        },
+        "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/app/api/projects/route.ts"
+      },
+      "[id]": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-07T12:26:29.368Z",
+          "lastUpdated": "2026-03-07T12:26:30.039Z"
+        },
+        "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/app/api/projects/[id]/route.ts"
+      },
+      "articles": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-07T12:28:10.210Z",
+          "lastUpdated": "2026-03-07T12:28:10.210Z"
+        },
+        "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/app/api/projects/[id]/articles/route.ts"
+      },
+      "excluded": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-07T12:28:20.014Z",
+          "lastUpdated": "2026-03-07T12:28:23.916Z"
+        },
+        "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/app/api/projects/[id]/articles/excluded/route.ts"
+      },
+      "reports": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-07T12:28:29.794Z",
+          "lastUpdated": "2026-03-07T12:28:34.841Z"
+        },
+        "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/app/api/projects/[id]/reports/route.ts"
+      },
+      "[reportId]": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-07T12:28:40.120Z",
+          "lastUpdated": "2026-03-07T12:28:46.545Z"
+        },
+        "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/app/api/projects/[id]/reports/[reportId]/route.ts"
+      },
+      "progress": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-07T12:29:13.699Z",
+          "lastUpdated": "2026-03-07T12:29:13.699Z"
+        },
+        "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/app/api/projects/[id]/deep-research/progress/route.ts"
+      },
+      "review-articles": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-07T12:30:02.719Z",
+          "lastUpdated": "2026-03-07T12:30:07.121Z"
+        },
+        "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/app/api/projects/[id]/deep-research/review-articles/route.ts"
+      },
+      "outline": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-07T12:30:11.409Z",
+          "lastUpdated": "2026-03-07T12:30:11.409Z"
+        },
+        "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/app/api/projects/[id]/deep-research/outline/route.ts"
+      },
+      "regenerate-section": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-07T12:30:15.503Z",
+          "lastUpdated": "2026-03-07T12:30:15.503Z"
+        },
+        "lastFile": "/Users/koscom/@work/research_ax/research_ax/src/app/api/projects/[id]/deep-research/outline/regenerate-section/route.ts"
+      }
+    },
+    "pipeline": {
+      "currentPhase": 1,
+      "level": "Dynamic",
+      "phaseHistory": []
+    },
+    "session": {
+      "startedAt": "2026-03-07T11:16:13.174Z",
+      "onboardingCompleted": false,
+      "lastActivity": "2026-03-07T12:33:04.207Z"
+    },
+    "history": [
+      {
+        "timestamp": "2026-03-07T11:55:00.169Z",
+        "feature": "ai",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T11:55:12.474Z",
+        "feature": "ai",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T11:55:13.276Z",
+        "feature": "ai",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T11:55:19.050Z",
+        "feature": "research_ax",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T11:55:23.510Z",
+        "feature": "research_ax",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T11:55:30.232Z",
+        "feature": "deep-research",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T11:55:32.498Z",
+        "feature": "deep-research",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T11:55:33.550Z",
+        "feature": "deep-research",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T11:55:40.086Z",
+        "feature": "deep-research",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T11:55:44.948Z",
+        "feature": "deep-research",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T11:55:46.341Z",
+        "feature": "deep-research",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T11:55:48.055Z",
+        "feature": "deep-research",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T11:55:49.220Z",
+        "feature": "deep-research",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T11:55:54.205Z",
+        "feature": "deep-research",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T11:55:56.256Z",
+        "feature": "deep-research",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T11:55:57.365Z",
+        "feature": "deep-research",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T11:56:02.325Z",
+        "feature": "deep-research",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T11:56:03.352Z",
+        "feature": "deep-research",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T11:56:08.088Z",
+        "feature": "pipeline",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T11:56:09.320Z",
+        "feature": "pipeline",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T11:56:10.313Z",
+        "feature": "pipeline",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T11:56:16.466Z",
+        "feature": "deep-research",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T11:56:37.179Z",
+        "feature": "project",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T11:57:10.471Z",
+        "feature": "project",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T11:57:34.081Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T11:57:42.912Z",
+        "feature": "finalize",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T11:57:48.193Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T11:57:58.962Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T11:58:11.420Z",
+        "feature": "analyze",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T11:58:22.498Z",
+        "feature": "storage",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T11:58:32.715Z",
+        "feature": "storage",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T11:58:40.573Z",
+        "feature": "storage",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T11:58:46.181Z",
+        "feature": "storage",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T11:59:48.267Z",
+        "feature": "project",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:00:40.906Z",
+        "feature": "deep-research",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:00:58.130Z",
+        "feature": "download",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:01:10.978Z",
+        "feature": "deep-research",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:01:30.088Z",
+        "feature": "search",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:01:34.541Z",
+        "feature": "analyze",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:01:46.549Z",
+        "feature": "compile",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:02:02.112Z",
+        "feature": "research_ax",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:02:36.524Z",
+        "feature": "storage",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:03:42.534Z",
+        "feature": "collect",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:04:00.420Z",
+        "feature": "report",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:20:14.299Z",
+        "feature": "storage",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:25:36.653Z",
+        "feature": "project",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:26:27.194Z",
+        "feature": "projects",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:26:28.461Z",
+        "feature": "projects",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:26:29.368Z",
+        "feature": "[id]",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:26:30.039Z",
+        "feature": "[id]",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:26:42.817Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:26:51.927Z",
+        "feature": "chat",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:26:59.611Z",
+        "feature": "finalize",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:27:06.086Z",
+        "feature": "collect",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:27:13.419Z",
+        "feature": "collect",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:27:17.248Z",
+        "feature": "collect",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:27:24.135Z",
+        "feature": "analyze",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:27:28.160Z",
+        "feature": "analyze",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:27:32.370Z",
+        "feature": "analyze",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:27:37.115Z",
+        "feature": "analyze",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:27:43.539Z",
+        "feature": "report",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:27:48.708Z",
+        "feature": "report",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:27:52.567Z",
+        "feature": "report",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:27:56.711Z",
+        "feature": "report",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:28:00.122Z",
+        "feature": "report",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:28:03.882Z",
+        "feature": "pipeline",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:28:10.210Z",
+        "feature": "articles",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:28:20.014Z",
+        "feature": "excluded",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:28:23.916Z",
+        "feature": "excluded",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:28:29.794Z",
+        "feature": "reports",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:28:34.841Z",
+        "feature": "reports",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:28:40.120Z",
+        "feature": "[reportId]",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:28:46.545Z",
+        "feature": "[reportId]",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:28:51.849Z",
+        "feature": "download",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:28:55.917Z",
+        "feature": "download",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:29:00.060Z",
+        "feature": "download",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:29:04.141Z",
+        "feature": "deep-research",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:29:08.568Z",
+        "feature": "deep-research",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:29:13.699Z",
+        "feature": "progress",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:29:17.902Z",
+        "feature": "compile",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:29:23.903Z",
+        "feature": "compile",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:29:29.001Z",
+        "feature": "compile",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:29:34.840Z",
+        "feature": "compile",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:29:38.980Z",
+        "feature": "compile",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:29:43.159Z",
+        "feature": "compile",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:29:48.518Z",
+        "feature": "analyze",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:29:54.339Z",
+        "feature": "analyze",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:29:58.011Z",
+        "feature": "search",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:30:02.719Z",
+        "feature": "review-articles",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:30:07.121Z",
+        "feature": "review-articles",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:30:11.409Z",
+        "feature": "outline",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:30:15.503Z",
+        "feature": "regenerate-section",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:30:22.634Z",
+        "feature": "pipeline",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:30:27.214Z",
+        "feature": "pipeline",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:30:33.989Z",
+        "feature": "pipeline",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:30:38.087Z",
+        "feature": "pipeline",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:30:44.916Z",
+        "feature": "pipeline",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:30:49.873Z",
+        "feature": "pipeline",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:30:53.598Z",
+        "feature": "pipeline",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:30:57.678Z",
+        "feature": "pipeline",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:31:02.584Z",
+        "feature": "pipeline",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:31:06.407Z",
+        "feature": "pipeline",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:31:11.040Z",
+        "feature": "pipeline",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:31:16.684Z",
+        "feature": "pipeline",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:31:23.104Z",
+        "feature": "deep-research",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:31:28.828Z",
+        "feature": "deep-research",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:31:42.345Z",
+        "feature": "deep-research",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:31:50.953Z",
+        "feature": "deep-research",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:31:57.385Z",
+        "feature": "deep-research",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:32:01.521Z",
+        "feature": "deep-research",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:32:06.678Z",
+        "feature": "deep-research",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:32:19.168Z",
+        "feature": "deep-research",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:32:28.515Z",
+        "feature": "deep-research",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:32:38.206Z",
+        "feature": "deep-research",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:32:49.934Z",
+        "feature": "deep-research",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-07T12:33:04.207Z",
+        "feature": "compile",
+        "phase": "do",
+        "action": "updated"
+      }
+    ]
+  }
+}

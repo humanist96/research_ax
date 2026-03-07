@@ -50,6 +50,12 @@ interface AnalyzeResponse {
   readonly data?: SectionResearchResult
 }
 
+interface RefineResponse {
+  readonly success: boolean
+  readonly error?: string
+  readonly data?: SectionResearchResult
+}
+
 interface CompileResponse {
   readonly success: boolean
   readonly error?: string
@@ -238,51 +244,93 @@ export function useDeepResearch(projectId: string): UseDeepResearchReturn {
     return json.data?.articles ?? []
   }, [projectId])
 
-  // Run analysis for a single section with auto-retry
+  // Run analysis for a single section: analyze (gpt-4o) → refine (gpt-4o-mini)
   const analyzeOneSection = useCallback(async (
     section: OutlineSection,
     articles: readonly ArticleData[],
     rId: string,
     signal: AbortSignal,
+    sectionUpdater?: (updates: Partial<SectionState>) => void,
     retryAttempt = 0,
   ): Promise<SectionResearchResult> => {
     try {
-      const res = await fetch(`/api/projects/${projectId}/deep-research/section/analyze`, {
+      // Step 1: Analyze (gpt-4o, ~30-50s)
+      const analyzeRes = await fetch(`/api/projects/${projectId}/deep-research/section/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ section, articles, reportId: rId }),
         signal,
       })
-      const json: AnalyzeResponse = await res.json()
-      if (!json.success) throw new Error(json.error ?? 'Analysis failed')
-      return json.data!
+      const analyzeJson: AnalyzeResponse = await analyzeRes.json()
+      if (!analyzeJson.success) throw new Error(analyzeJson.error ?? 'Analysis failed')
+      const analyzeResult = analyzeJson.data!
+
+      // Step 2: Refine (gpt-4o-mini, ~10-20s)
+      sectionUpdater?.({ status: 'refining', message: '품질 개선 중...' })
+
+      const refineRes = await fetch(`/api/projects/${projectId}/deep-research/section/refine`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ section, analyzeResult, reportId: rId }),
+        signal,
+      })
+      const refineJson: RefineResponse = await refineRes.json()
+
+      // If refine fails, still use the raw analysis (degraded but not broken)
+      if (!refineJson.success) {
+        console.warn(`Refine failed for ${section.id}, using raw analysis`)
+        return analyzeResult
+      }
+
+      return refineJson.data!
     } catch (err) {
       if (signal.aborted) throw err
       if (retryAttempt < MAX_AUTO_RETRY) {
         const backoff = RETRY_BASE_DELAY_MS * Math.pow(2, retryAttempt)
         await delay(backoff)
-        return analyzeOneSection(section, articles, rId, signal, retryAttempt + 1)
+        return analyzeOneSection(section, articles, rId, signal, sectionUpdater, retryAttempt + 1)
       }
       throw err
     }
   }, [projectId])
 
-  // Run compile (executive summary + conclusion + merge)
+  // Run compile in 3 sub-steps to stay within 60s per call:
+  // 1. Generate executive summary (gpt-4o, ~40s)
+  // 2. Generate conclusion (gpt-4o, ~40s) — runs in parallel with summary
+  // 3. Finalize: merge markdown, save meta, register report (~5s)
   const compileReport = useCallback(async (
     rId: string,
     outlineData: ReportOutline,
     sectionResults: readonly SectionResearchResult[],
     signal: AbortSignal,
   ): Promise<string> => {
-    const res = await fetch(`/api/projects/${projectId}/deep-research/compile`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ reportId: rId, outline: outlineData, sectionResults }),
-      signal,
+    const compileBody = JSON.stringify({ reportId: rId, outline: outlineData, sectionResults })
+    const headers = { 'Content-Type': 'application/json' }
+
+    // Step 1 & 2: summary + conclusion in parallel (each fits in 60s)
+    const [summaryRes, conclusionRes] = await Promise.all([
+      fetch(`/api/projects/${projectId}/deep-research/compile/summary`, {
+        method: 'POST', headers, body: compileBody, signal,
+      }),
+      fetch(`/api/projects/${projectId}/deep-research/compile/conclusion`, {
+        method: 'POST', headers, body: compileBody, signal,
+      }),
+    ])
+
+    const summaryJson = await summaryRes.json()
+    const conclusionJson = await conclusionRes.json()
+
+    if (!summaryJson.success) throw new Error(summaryJson.error ?? 'Summary generation failed')
+    if (!conclusionJson.success) throw new Error(conclusionJson.error ?? 'Conclusion generation failed')
+
+    // Step 3: finalize (merge + save, no AI calls, fast)
+    const finalizeRes = await fetch(`/api/projects/${projectId}/deep-research/compile/finalize`, {
+      method: 'POST', headers, body: compileBody, signal,
     })
-    const json: CompileResponse = await res.json()
-    if (!json.success) throw new Error(json.error ?? 'Compile failed')
-    return json.data?.reportId ?? rId
+    const finalizeJson: CompileResponse = await finalizeRes.json()
+    if (!finalizeJson.success) throw new Error(finalizeJson.error ?? 'Finalize failed')
+
+    return finalizeJson.data?.reportId ?? rId
   }, [projectId])
 
   // Concurrency-limited batch executor
@@ -385,7 +433,8 @@ export function useDeepResearch(projectId: string): UseDeepResearchReturn {
         const startTime = Date.now()
 
         try {
-          const result = await analyzeOneSection(section, articles, rId, controller.signal)
+          const sectionUpdater = (updates: Partial<SectionState>) => updateSection(section.id, updates)
+          const result = await analyzeOneSection(section, articles, rId, controller.signal, sectionUpdater)
           const elapsed = (Date.now() - startTime) / 1000
           sectionTimesRef.current.push(elapsed)
           resultsMap.set(section.id, result)
@@ -452,7 +501,8 @@ export function useDeepResearch(projectId: string): UseDeepResearchReturn {
       }
 
       updateSection(sectionId, { status: 'analyzing', message: '분석 중...', error: undefined })
-      const result = await analyzeOneSection(section, articles, reportIdRef.current, controller.signal)
+      const sectionUpdater = (updates: Partial<SectionState>) => updateSection(sectionId, updates)
+      const result = await analyzeOneSection(section, articles, reportIdRef.current, controller.signal, sectionUpdater)
       resultsMapRef.current.set(sectionId, result)
       updateSection(sectionId, { status: 'complete', message: '완료', result })
     } catch (err) {
