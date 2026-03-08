@@ -1,24 +1,6 @@
 import { NextRequest } from 'next/server'
-import { getProject, getProjectNotebookLM } from '@/lib/project/store'
+import { getProject, getProjectNotebookLM, getNotebookAudioBlob } from '@/lib/project/store'
 import type { ArtifactType } from '@/types/notebooklm'
-
-function getBridgeConfig() {
-  const baseUrl = process.env.NOTEBOOKLM_BRIDGE_URL
-  const apiKey = process.env.NOTEBOOKLM_API_KEY
-  if (!baseUrl || !apiKey) return null
-  return { baseUrl: baseUrl.replace(/\/$/, ''), apiKey }
-}
-
-const CONTENT_TYPES: Record<ArtifactType, string> = {
-  audio: 'audio/mpeg',
-  video: 'video/mp4',
-  'slide-deck': 'application/pdf',
-  quiz: 'application/json',
-  flashcards: 'application/json',
-  'mind-map': 'image/svg+xml',
-  infographic: 'image/png',
-  'data-table': 'application/json',
-}
 
 export async function GET(
   _request: NextRequest,
@@ -32,11 +14,6 @@ export async function GET(
     return Response.json({ success: false, error: 'Project not found' }, { status: 404 })
   }
 
-  const bridge = getBridgeConfig()
-  if (!bridge) {
-    return Response.json({ success: false, error: 'NotebookLM bridge not configured' }, { status: 500 })
-  }
-
   const notebookLM = await getProjectNotebookLM(id)
   if (!notebookLM) {
     return Response.json({ success: false, error: 'Notebook not created yet' }, { status: 400 })
@@ -48,43 +25,28 @@ export async function GET(
   }
 
   try {
-    const bridgeRes = await fetch(
-      `${bridge.baseUrl}/api/notebooks/${notebookLM.notebookId}/artifacts/${artifactType}`,
-      {
-        headers: { 'X-API-Key': bridge.apiKey },
-      },
-    )
-
-    if (!bridgeRes.ok) {
-      const errText = await bridgeRes.text().catch(() => 'Unknown error')
-      return Response.json({ success: false, error: `Bridge error: ${errText}` }, { status: bridgeRes.status })
+    if (artifactType === 'audio') {
+      const buffer = await getNotebookAudioBlob(id)
+      if (!buffer) {
+        return Response.json({ success: false, error: 'Audio file not found' }, { status: 404 })
+      }
+      return new Response(new Uint8Array(buffer), {
+        status: 200,
+        headers: {
+          'Content-Type': 'audio/mpeg',
+          'Content-Disposition': 'attachment; filename="podcast.mp3"',
+        },
+      })
     }
 
-    const contentType = CONTENT_TYPES[artifactType] ?? 'application/octet-stream'
+    // JSON artifacts - return resultData directly
+    if (artifact.resultData) {
+      return Response.json({ success: true, data: artifact.resultData })
+    }
 
-    return new Response(bridgeRes.body, {
-      status: 200,
-      headers: {
-        'Content-Type': contentType,
-        'Content-Disposition': `attachment; filename="${artifactType}.${getExtension(artifactType)}"`,
-      },
-    })
+    return Response.json({ success: false, error: 'No artifact data' }, { status: 404 })
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
     return Response.json({ success: false, error: message }, { status: 500 })
   }
-}
-
-function getExtension(type: ArtifactType): string {
-  const map: Record<ArtifactType, string> = {
-    audio: 'mp3',
-    video: 'mp4',
-    'slide-deck': 'pdf',
-    quiz: 'json',
-    flashcards: 'json',
-    'mind-map': 'svg',
-    infographic: 'png',
-    'data-table': 'json',
-  }
-  return map[type] ?? 'bin'
 }

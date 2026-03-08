@@ -315,6 +315,30 @@ export async function saveProjectNotebookLM(projectId: string, data: ProjectNote
   writeJson(path.join(projectDir(projectId), 'notebooklm.json'), data)
 }
 
+export async function saveNotebookAudioBlob(projectId: string, data: Buffer): Promise<string> {
+  const blobPath = `projects/${projectId}/notebooklm/audio.mp3`
+  if (isVercelStorage()) {
+    await getStorage().putBlob(blobPath, data)
+    return blobPath
+  }
+  const dir = path.join(projectDir(projectId), 'notebooklm')
+  ensureDir(dir)
+  const filePath = path.join(dir, 'audio.mp3')
+  fs.writeFileSync(filePath, data)
+  return filePath
+}
+
+export async function getNotebookAudioBlob(projectId: string): Promise<Buffer | null> {
+  if (isVercelStorage()) {
+    return getStorage().getBlob(`projects/${projectId}/notebooklm/audio.mp3`)
+  }
+  const filePath = path.join(projectDir(projectId), 'notebooklm', 'audio.mp3')
+  try {
+    if (!fs.existsSync(filePath)) return null
+    return fs.readFileSync(filePath)
+  } catch { return null }
+}
+
 export async function getDeepReportMerged(projectId: string, reportId: string, format: 'md' | 'pdf'): Promise<Buffer | string | null> {
   const filename = format === 'md' ? 'merged.md' : 'merged.pdf'
   if (isVercelStorage()) {

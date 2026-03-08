@@ -1,13 +1,7 @@
 import { NextRequest } from 'next/server'
-import { getProject, getProjectNotebookLM, saveProjectNotebookLM } from '@/lib/project/store'
+import { getProject, getProjectNotebookLM, saveProjectNotebookLM, getLatestDeepReportMeta, getDeepReportMerged, saveNotebookAudioBlob } from '@/lib/project/store'
+import { generateContent } from '@/lib/content-generator'
 import type { ArtifactType, NotebookArtifact } from '@/types/notebooklm'
-
-function getBridgeConfig() {
-  const baseUrl = process.env.NOTEBOOKLM_BRIDGE_URL
-  const apiKey = process.env.NOTEBOOKLM_API_KEY
-  if (!baseUrl || !apiKey) return null
-  return { baseUrl: baseUrl.replace(/\/$/, ''), apiKey }
-}
 
 export async function POST(
   request: NextRequest,
@@ -18,11 +12,6 @@ export async function POST(
 
   if (!project) {
     return Response.json({ success: false, error: 'Project not found' }, { status: 404 })
-  }
-
-  const bridge = getBridgeConfig()
-  if (!bridge) {
-    return Response.json({ success: false, error: 'NotebookLM bridge not configured' }, { status: 500 })
   }
 
   const notebookLM = await getProjectNotebookLM(id)
@@ -40,51 +29,72 @@ export async function POST(
       return Response.json({ success: false, error: 'type is required' }, { status: 400 })
     }
 
-    // Call Python Bridge to generate content
-    const bridgeRes = await fetch(`${bridge.baseUrl}/api/notebooks/${notebookLM.notebookId}/generate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-Key': bridge.apiKey,
-      },
-      body: JSON.stringify({
-        type: body.type,
-        options: body.options ?? {},
-      }),
-    })
-
-    if (!bridgeRes.ok) {
-      const errText = await bridgeRes.text().catch(() => 'Unknown error')
-      return Response.json({ success: false, error: `Bridge error: ${errText}` }, { status: bridgeRes.status })
+    // Load report markdown
+    const meta = await getLatestDeepReportMeta(id)
+    if (!meta) {
+      return Response.json({ success: false, error: 'No report found' }, { status: 400 })
     }
 
-    const bridgeData = await bridgeRes.json() as { task_id: string }
+    const markdown = await getDeepReportMerged(id, meta.reportId, 'md')
+    if (!markdown || typeof markdown !== 'string') {
+      return Response.json({ success: false, error: 'Report content not found' }, { status: 400 })
+    }
 
-    // Create new artifact entry
-    const newArtifact: NotebookArtifact = {
+    // Generate content via OpenAI
+    const result = await generateContent(markdown, body.type, body.options ?? {})
+
+    // Build artifact
+    let artifact: NotebookArtifact = {
       type: body.type,
-      status: 'processing',
-      taskId: bridgeData.task_id,
+      status: 'complete',
       options: body.options ?? {},
       createdAt: new Date().toISOString(),
+      completedAt: new Date().toISOString(),
     }
 
-    // Replace existing artifact of same type or append
+    if (result.audioBuffer) {
+      const audioPath = await saveNotebookAudioBlob(id, result.audioBuffer)
+      artifact = { ...artifact, resultPath: audioPath }
+    } else if (result.data) {
+      artifact = { ...artifact, resultData: result.data }
+    }
+
+    // Update notebook state
     const existingIdx = notebookLM.artifacts.findIndex((a) => a.type === body.type)
     const updatedArtifacts = existingIdx >= 0
-      ? notebookLM.artifacts.map((a, i) => i === existingIdx ? newArtifact : a)
-      : [...notebookLM.artifacts, newArtifact]
+      ? notebookLM.artifacts.map((a, i) => i === existingIdx ? artifact : a)
+      : [...notebookLM.artifacts, artifact]
 
-    const updated = {
-      ...notebookLM,
-      artifacts: updatedArtifacts,
-    }
+    await saveProjectNotebookLM(id, { ...notebookLM, artifacts: updatedArtifacts })
 
-    await saveProjectNotebookLM(id, updated)
-
-    return Response.json({ success: true, data: { taskId: bridgeData.task_id, artifact: newArtifact } })
+    return Response.json({ success: true, data: { artifact } })
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
+
+    // Save error status
+    try {
+      const nb = await getProjectNotebookLM(id)
+      if (nb) {
+        const body = await request.clone().json().catch(() => ({ type: null })) as { type?: ArtifactType }
+        if (body.type) {
+          const errorArtifact: NotebookArtifact = {
+            type: body.type,
+            status: 'error',
+            options: {},
+            createdAt: new Date().toISOString(),
+            error: message,
+          }
+          const idx = nb.artifacts.findIndex((a) => a.type === body.type)
+          const arts = idx >= 0
+            ? nb.artifacts.map((a, i) => i === idx ? errorArtifact : a)
+            : [...nb.artifacts, errorArtifact]
+          await saveProjectNotebookLM(id, { ...nb, artifacts: arts })
+        }
+      }
+    } catch {
+      // Ignore save errors
+    }
+
     return Response.json({ success: false, error: message }, { status: 500 })
   }
 }

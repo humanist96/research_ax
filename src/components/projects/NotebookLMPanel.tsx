@@ -3,6 +3,10 @@
 import { useState, useCallback } from 'react'
 import { useNotebookLM } from '@/hooks/useNotebookLM'
 import type { ArtifactType, ArtifactStatus } from '@/types/notebooklm'
+import { QuizViewer } from './content-viewers/QuizViewer'
+import { FlashcardViewer } from './content-viewers/FlashcardViewer'
+import { MindMapViewer } from './content-viewers/MindMapViewer'
+import { SlideViewer } from './content-viewers/SlideViewer'
 
 interface NotebookLMPanelProps {
   readonly projectId: string
@@ -18,13 +22,10 @@ interface ArtifactCardConfig {
 
 const ARTIFACT_CARDS: readonly ArtifactCardConfig[] = [
   { type: 'audio', icon: '\u266B', label: '\uC624\uB514\uC624', description: 'AI \uB300\uD654\uD615 \uD31C\uCE90\uC2A4\uD2B8 \uC0DD\uC131' },
-  { type: 'video', icon: '\u25B6', label: '\uBE44\uB514\uC624', description: '\uC560\uB2C8\uBA54\uC774\uC158/\uD654\uC774\uD2B8\uBCF4\uB4DC \uC601\uC0C1' },
   { type: 'slide-deck', icon: '\u25A3', label: '\uC2AC\uB77C\uC774\uB4DC', description: '\uBC1C\uD45C\uC6A9 \uC2AC\uB77C\uC774\uB4DC \uB371' },
   { type: 'quiz', icon: '\u2753', label: '\uD000\uC988', description: '\uC774\uD574\uB3C4 \uD14C\uC2A4\uD2B8 \uBB38\uC81C' },
   { type: 'flashcards', icon: '\u2B50', label: '\uD50C\uB798\uC2DC\uCE74\uB4DC', description: '\uD575\uC2EC \uAC1C\uB150 \uCE74\uB4DC' },
   { type: 'mind-map', icon: '\u26A1', label: '\uB9C8\uC778\uB4DC\uB9F5', description: '\uC8FC\uC81C \uAD00\uACC4\uB3C4' },
-  { type: 'infographic', icon: '\u25C9', label: '\uC778\uD3EC\uADF8\uB798\uD53D', description: '\uC2DC\uAC01\uC801 \uC694\uC57D \uC774\uBBF8\uC9C0' },
-  { type: 'data-table', icon: '\u2261', label: '\uB370\uC774\uD130 \uD14C\uC774\uBE14', description: '\uAD6C\uC870\uD654\uB41C \uB370\uC774\uD130 \uCD94\uCD9C' },
 ]
 
 const AUDIO_STYLES = [
@@ -32,14 +33,6 @@ const AUDIO_STYLES = [
   { value: 'conversation', label: '\uB300\uD654\uD615' },
   { value: 'briefing', label: '\uBE0C\uB9AC\uD551' },
   { value: 'summary', label: '\uC694\uC57D' },
-] as const
-
-const VIDEO_STYLES = [
-  { value: 'whiteboard', label: '\uD654\uC774\uD2B8\uBCF4\uB4DC' },
-  { value: 'anime', label: '\uC560\uB2C8\uBA54' },
-  { value: 'kawaii', label: '\uCE74\uC640\uC774' },
-  { value: 'documentary', label: '\uB2E4\uD050\uBA58\uD130\uB9AC' },
-  { value: 'sketch', label: '\uC2A4\uCF00\uCE58' },
 ] as const
 
 function getStatusColor(status: ArtifactStatus): string {
@@ -73,7 +66,6 @@ function ArtifactOptionsModal({
 }) {
   const [audioStyle, setAudioStyle] = useState('deep-dive')
   const [audioLength, setAudioLength] = useState('medium')
-  const [videoStyle, setVideoStyle] = useState('whiteboard')
   const [quizDifficulty, setQuizDifficulty] = useState('medium')
   const [quizQuantity, setQuizQuantity] = useState('default')
 
@@ -81,13 +73,11 @@ function ArtifactOptionsModal({
     let options: Record<string, unknown> = {}
     if (card.type === 'audio') {
       options = { style: audioStyle, length: audioLength }
-    } else if (card.type === 'video') {
-      options = { style: videoStyle }
     } else if (card.type === 'quiz') {
       options = { difficulty: quizDifficulty, quantity: quizQuantity }
     }
     onGenerate(options)
-  }, [card.type, audioStyle, audioLength, videoStyle, quizDifficulty, quizQuantity, onGenerate])
+  }, [card.type, audioStyle, audioLength, quizDifficulty, quizQuantity, onGenerate])
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -141,27 +131,6 @@ function ArtifactOptionsModal({
             </>
           )}
 
-          {card.type === 'video' && (
-            <div>
-              <label className="block text-sm text-gray-400 mb-1.5">{'\uC2A4\uD0C0\uC77C'}</label>
-              <div className="flex flex-wrap gap-2">
-                {VIDEO_STYLES.map((s) => (
-                  <button
-                    key={s.value}
-                    onClick={() => setVideoStyle(s.value)}
-                    className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
-                      videoStyle === s.value
-                        ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40'
-                        : 'bg-white/5 text-gray-400 border border-white/10 hover:border-white/20'
-                    }`}
-                  >
-                    {s.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
           {card.type === 'quiz' && (
             <>
               <div>
@@ -203,7 +172,7 @@ function ArtifactOptionsModal({
             </>
           )}
 
-          {card.type !== 'audio' && card.type !== 'video' && card.type !== 'quiz' && (
+          {card.type !== 'audio' && card.type !== 'quiz' && (
             <p className="text-sm text-gray-400">{'\uAE30\uBCF8 \uC124\uC815\uC73C\uB85C \uC0DD\uC131\uD569\uB2C8\uB2E4.'}</p>
           )}
         </div>
@@ -227,13 +196,26 @@ function ArtifactOptionsModal({
   )
 }
 
+function InlineViewer({ type, data }: { readonly type: ArtifactType; readonly data: unknown }) {
+  switch (type) {
+    case 'quiz':
+      return <QuizViewer data={data as import('@/types/notebooklm').QuizResult} />
+    case 'flashcards':
+      return <FlashcardViewer data={data as import('@/types/notebooklm').FlashcardsResult} />
+    case 'mind-map':
+      return <MindMapViewer data={data as import('@/types/notebooklm').MindMapResult} />
+    case 'slide-deck':
+      return <SlideViewer data={data as import('@/types/notebooklm').SlideResult} />
+    default:
+      return null
+  }
+}
+
 function ChatSection({
-  projectId,
   chatMessages,
   isChatLoading,
   onSendChat,
 }: {
-  readonly projectId: string
   readonly chatMessages: readonly { role: string; content: string; timestamp: string }[]
   readonly isChatLoading: boolean
   readonly onSendChat: (question: string) => void
@@ -299,6 +281,7 @@ function ChatSection({
 export function NotebookLMPanel({ projectId, reportReady }: NotebookLMPanelProps) {
   const notebook = useNotebookLM(projectId)
   const [selectedCard, setSelectedCard] = useState<ArtifactCardConfig | null>(null)
+  const [expandedArtifact, setExpandedArtifact] = useState<ArtifactType | null>(null)
   const [isChatExpanded, setIsChatExpanded] = useState(false)
 
   const handleGenerate = useCallback((options: Record<string, unknown>) => {
@@ -310,15 +293,16 @@ export function NotebookLMPanel({ projectId, reportReady }: NotebookLMPanelProps
   const handleCardClick = useCallback((card: ArtifactCardConfig) => {
     const existing = notebook.getArtifact(card.type)
     if (existing?.status === 'processing') return
+    if (existing?.status === 'complete') {
+      setExpandedArtifact((prev) => prev === card.type ? null : card.type)
+      return
+    }
     setSelectedCard(card)
   }, [notebook])
 
   if (!reportReady) return null
 
-  // Hide entirely when bridge is not configured
-  if (notebook.isConfigured === false) return null
-
-  // Still loading config status
+  // Still loading state
   if (notebook.isConfigured === null) return null
 
   // Not yet created
@@ -327,9 +311,9 @@ export function NotebookLMPanel({ projectId, reportReady }: NotebookLMPanelProps
       <div className="glass rounded-xl p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="font-semibold text-white">NotebookLM{'\uC73C\uB85C \uD655\uC7A5'}</h3>
+            <h3 className="font-semibold text-white">{'\uCF58\uD150\uCE20 \uD5C8\uBE0C'}</h3>
             <p className="text-sm text-gray-400 mt-0.5">
-              {'\uBCF4\uACE0\uC11C\uB97C \uC624\uB514\uC624, \uBE44\uB514\uC624, \uD000\uC988 \uB4F1 \uB2E4\uC591\uD55C \uCF58\uD150\uCE20\uB85C \uBCC0\uD658\uD569\uB2C8\uB2E4'}
+              {'\uBCF4\uACE0\uC11C\uB97C \uC624\uB514\uC624, \uC2AC\uB77C\uC774\uB4DC, \uD000\uC988 \uB4F1 \uB2E4\uC591\uD55C \uCF58\uD150\uCE20\uB85C \uBCC0\uD658\uD569\uB2C8\uB2E4'}
             </p>
           </div>
           <button
@@ -343,7 +327,7 @@ export function NotebookLMPanel({ projectId, reportReady }: NotebookLMPanelProps
                 {'\uC0DD\uC131 \uC911...'}
               </span>
             ) : (
-              'NotebookLM \uC0DD\uC131'
+              '\uCF58\uD150\uCE20 \uD5C8\uBE0C \uC0DD\uC131'
             )}
           </button>
         </div>
@@ -361,7 +345,7 @@ export function NotebookLMPanel({ projectId, reportReady }: NotebookLMPanelProps
     <div className="glass rounded-xl p-6">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="font-semibold text-white">NotebookLM {'\uCF58\uD150\uCE20 \uD5C8\uBE0C'}</h3>
+          <h3 className="font-semibold text-white">{'\uCF58\uD150\uCE20 \uD5C8\uBE0C'}</h3>
           <p className="text-sm text-gray-400 mt-0.5">
             {'\uBCF4\uACE0\uC11C\uB97C \uB2E4\uC591\uD55C \uD615\uD0DC\uB85C \uBCC0\uD658\uD569\uB2C8\uB2E4'}
           </p>
@@ -369,18 +353,21 @@ export function NotebookLMPanel({ projectId, reportReady }: NotebookLMPanelProps
       </div>
 
       {/* Artifact Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         {ARTIFACT_CARDS.map((card) => {
           const artifact = notebook.getArtifact(card.type)
-          const isProcessing = artifact?.status === 'processing'
+          const isProcessing = artifact?.status === 'processing' || notebook.generatingType === card.type
           const isComplete = artifact?.status === 'complete'
           const isError = artifact?.status === 'error'
+          const isExpanded = expandedArtifact === card.type
 
           return (
             <div
               key={card.type}
-              className={`relative rounded-lg border p-4 transition-all cursor-pointer group ${
-                isComplete
+              className={`relative rounded-lg border p-3 transition-all cursor-pointer group ${
+                isExpanded
+                  ? 'border-blue-500/40 bg-blue-500/10'
+                  : isComplete
                   ? 'border-green-500/20 bg-green-500/5 hover:border-green-500/40'
                   : isProcessing
                   ? 'border-blue-500/20 bg-blue-500/5'
@@ -390,38 +377,33 @@ export function NotebookLMPanel({ projectId, reportReady }: NotebookLMPanelProps
               }`}
               onClick={() => handleCardClick(card)}
             >
-              <div className="text-2xl mb-2">{card.icon}</div>
+              <div className="text-xl mb-1">{card.icon}</div>
               <div className="text-sm font-medium text-gray-200">{card.label}</div>
-              <div className="text-xs text-gray-500 mt-0.5">{card.description}</div>
+              <div className="text-xs text-gray-500 mt-0.5 line-clamp-1">{card.description}</div>
 
               {/* Status indicator */}
-              {artifact && (
-                <div className={`mt-2 text-xs font-medium ${getStatusColor(artifact.status)}`}>
-                  {isProcessing && (
+              {(artifact || isProcessing) && (
+                <div className={`mt-1.5 text-xs font-medium ${isProcessing ? 'text-blue-400' : getStatusColor(artifact?.status ?? 'pending')}`}>
+                  {isProcessing ? (
                     <span className="inline-flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
-                      {getStatusLabel(artifact.status)}
+                      {'\uC0DD\uC131 \uC911...'}
                     </span>
-                  )}
-                  {!isProcessing && getStatusLabel(artifact.status)}
+                  ) : artifact ? (
+                    getStatusLabel(artifact.status)
+                  ) : null}
                 </div>
               )}
 
-              {/* Download button for complete artifacts */}
-              {isComplete && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    notebook.downloadArtifact(card.type)
-                  }}
-                  className="absolute top-2 right-2 px-2 py-1 text-xs text-green-400 border border-green-500/30 rounded hover:bg-green-500/10 transition-all opacity-0 group-hover:opacity-100"
-                >
-                  {'\uB2E4\uC6B4\uB85C\uB4DC'}
-                </button>
+              {/* Re-generate hint for complete */}
+              {isComplete && !isExpanded && (
+                <div className="absolute top-1.5 right-1.5 text-xs text-green-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {'\u2714'}
+                </div>
               )}
 
               {/* Error tooltip */}
-              {isError && artifact.error && (
+              {isError && artifact?.error && (
                 <div className="mt-1 text-xs text-red-400 truncate" title={artifact.error}>
                   {artifact.error}
                 </div>
@@ -430,6 +412,40 @@ export function NotebookLMPanel({ projectId, reportReady }: NotebookLMPanelProps
           )
         })}
       </div>
+
+      {/* Inline Viewer for expanded artifact */}
+      {expandedArtifact && (() => {
+        const artifact = notebook.getArtifact(expandedArtifact)
+        if (!artifact || artifact.status !== 'complete' || !artifact.resultData) return null
+
+        return (
+          <div className="mt-4 p-4 bg-white/[0.02] border border-white/10 rounded-xl">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-sm font-medium text-gray-300">
+                {ARTIFACT_CARDS.find((c) => c.type === expandedArtifact)?.label}
+              </h4>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setSelectedCard(ARTIFACT_CARDS.find((c) => c.type === expandedArtifact) ?? null)
+                  }}
+                  className="px-2 py-1 text-xs text-gray-400 border border-white/10 rounded hover:bg-white/5 transition-all"
+                >
+                  {'\uC7AC\uC0DD\uC131'}
+                </button>
+                <button
+                  onClick={() => setExpandedArtifact(null)}
+                  className="px-2 py-1 text-xs text-gray-400 border border-white/10 rounded hover:bg-white/5 transition-all"
+                >
+                  {'\uC811\uAE30'}
+                </button>
+              </div>
+            </div>
+            <InlineViewer type={expandedArtifact} data={artifact.resultData} />
+          </div>
+        )
+      })()}
 
       {/* Audio Player for completed audio */}
       {notebook.getArtifact('audio')?.status === 'complete' && (
@@ -461,7 +477,6 @@ export function NotebookLMPanel({ projectId, reportReady }: NotebookLMPanelProps
         </button>
         {isChatExpanded && (
           <ChatSection
-            projectId={projectId}
             chatMessages={notebook.chatMessages}
             isChatLoading={notebook.isChatLoading}
             onSendChat={notebook.sendChat}
