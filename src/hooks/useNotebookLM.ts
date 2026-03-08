@@ -22,6 +22,7 @@ export function useNotebookLM(projectId: string) {
   const [chatMessages, setChatMessages] = useState<readonly ChatMessage[]>([])
   const [isChatLoading, setIsChatLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isConfigured, setIsConfigured] = useState<boolean | null>(null)
   const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const mountedRef = useRef(true)
 
@@ -31,13 +32,15 @@ export function useNotebookLM(projectId: string) {
     async function loadState() {
       try {
         const res = await fetch(`/api/projects/${projectId}/notebooklm`)
-        const json = await res.json() as ApiResponse<ProjectNotebookLM | null>
-        if (json.success && json.data && mountedRef.current) {
+        const json = await res.json() as ApiResponse<ProjectNotebookLM | null> & { configured?: boolean }
+        if (!mountedRef.current) return
+        setIsConfigured(json.configured ?? false)
+        if (json.success && json.data) {
           setNotebookId(json.data.notebookId)
           setArtifacts(json.data.artifacts)
         }
       } catch {
-        // Ignore load errors
+        if (mountedRef.current) setIsConfigured(false)
       }
     }
     loadState()
@@ -198,6 +201,7 @@ export function useNotebookLM(projectId: string) {
     notebookId,
     artifacts,
     isCreating,
+    isConfigured,
     error,
     chatMessages,
     isChatLoading,

@@ -91,9 +91,14 @@ export async function GET(
     return Response.json({ success: false, error: 'Project not found' }, { status: 404 })
   }
 
+  const bridge = getBridgeConfig()
+  if (!bridge) {
+    return Response.json({ success: true, data: null, configured: false })
+  }
+
   try {
     const notebookLM = await getProjectNotebookLM(id)
-    return Response.json({ success: true, data: notebookLM })
+    return Response.json({ success: true, data: notebookLM, configured: true })
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
     return Response.json({ success: false, error: message }, { status: 500 })

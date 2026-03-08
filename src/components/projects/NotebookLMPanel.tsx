@@ -315,6 +315,12 @@ export function NotebookLMPanel({ projectId, reportReady }: NotebookLMPanelProps
 
   if (!reportReady) return null
 
+  // Hide entirely when bridge is not configured
+  if (notebook.isConfigured === false) return null
+
+  // Still loading config status
+  if (notebook.isConfigured === null) return null
+
   // Not yet created
   if (!notebook.notebookId) {
     return (
