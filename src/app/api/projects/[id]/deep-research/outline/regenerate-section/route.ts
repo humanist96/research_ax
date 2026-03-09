@@ -3,6 +3,8 @@ import { getProject } from '@/lib/project/store'
 import { regenerateSection } from '@/lib/deep-research/outline-generator'
 import type { ReportOutline } from '@/lib/deep-research/types'
 
+export const maxDuration = 60
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },

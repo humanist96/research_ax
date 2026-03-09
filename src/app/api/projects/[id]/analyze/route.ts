@@ -5,6 +5,8 @@ import { buildSummarizationPrompt, parseSummarizationResult } from '@/lib/analyz
 import { callAI } from '@/lib/ai'
 import type { AnalyzedArticle } from '@/types'
 
+export const maxDuration = 60
+
 const BATCH_SIZE = 10
 
 function chunk<T>(arr: readonly T[], size: number): T[][] {

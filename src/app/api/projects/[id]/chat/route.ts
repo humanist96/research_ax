@@ -3,6 +3,8 @@ import { getProject, addConversationTurn } from '@/lib/project/store'
 import { streamChatResponse, buildConversationPrompt } from '@/lib/project/chat-handler'
 import type { ConversationTurn } from '@/types'
 
+export const maxDuration = 60
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

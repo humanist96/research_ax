@@ -4,6 +4,8 @@ import { runDeepResearch } from '@/lib/deep-research/orchestrator'
 import type { DeepResearchEvent, ReportOutline } from '@/lib/deep-research/types'
 import type { ProjectConfig } from '@/types'
 
+export const maxDuration = 60
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },

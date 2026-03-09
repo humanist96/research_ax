@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server'
 import { getProject, getLatestDeepReportMeta, getDeepReportMerged } from '@/lib/project/store'
 import { callAI } from '@/lib/ai'
 
+export const maxDuration = 60
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },

@@ -3,6 +3,8 @@ import { getProject } from '@/lib/project/store'
 import { getLatestDeepReportMeta } from '@/lib/project/store'
 import { submitArticleReview, hasPendingReview } from '@/lib/deep-research/article-review-store'
 
+export const maxDuration = 60
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },

@@ -18,6 +18,8 @@ import {
 } from '@/lib/deep-research/report-compiler'
 import type { ReportOutline, SectionResearchResult, DeepReportSectionStatus } from '@/lib/deep-research/types'
 
+export const maxDuration = 60
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },

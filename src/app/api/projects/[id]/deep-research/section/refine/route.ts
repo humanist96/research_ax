@@ -3,6 +3,8 @@ import { getProject, saveDeepReportSection } from '@/lib/project/store'
 import { refineOnly } from '@/lib/deep-research/section-researcher'
 import type { OutlineSection, SectionResearchResult } from '@/lib/deep-research/types'
 
+export const maxDuration = 60
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },

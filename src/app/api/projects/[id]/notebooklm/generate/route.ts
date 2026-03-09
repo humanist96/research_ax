@@ -3,6 +3,8 @@ import { getProject, getProjectNotebookLM, saveProjectNotebookLM, getLatestDeepR
 import { generateContent } from '@/lib/content-generator'
 import type { ArtifactType, NotebookArtifact } from '@/types/notebooklm'
 
+export const maxDuration = 60
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },

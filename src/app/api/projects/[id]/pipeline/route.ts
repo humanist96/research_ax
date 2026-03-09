@@ -3,6 +3,8 @@ import { getProject, setProjectStatus } from '@/lib/project/store'
 import { runPipeline } from '@/lib/pipeline/orchestrator'
 import type { PipelineEvent } from '@/lib/pipeline/types'
 
+export const maxDuration = 60
+
 export async function POST(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

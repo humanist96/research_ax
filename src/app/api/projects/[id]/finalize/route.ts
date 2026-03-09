@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getProject, setProjectConfig, setProjectStatus } from '@/lib/project/store'
 import { generateConfig } from '@/lib/project/config-generator'
 
+export const maxDuration = 60
+
 export async function POST(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

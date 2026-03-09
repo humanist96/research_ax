@@ -11,6 +11,8 @@ import {
 import { buildDynamicReport, buildReportMeta } from '@/lib/report/markdown-builder'
 import type { AnalyzedArticle, ReportIndex } from '@/types'
 
+export const maxDuration = 60
+
 function getDateRange(): { readonly startDate: string; readonly endDate: string } {
   const now = new Date()
   const endDate = now.toISOString().split('T')[0]

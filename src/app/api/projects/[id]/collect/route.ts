@@ -12,6 +12,8 @@ import { aggregateSearch } from '@/lib/collector/aggregator'
 import { matchDynamicKeywords, isRelevant } from '@/lib/collector/keyword-matcher'
 import type { Article, CollectionLog } from '@/types'
 
+export const maxDuration = 60
+
 function generateId(url: string): string {
   return crypto.createHash('md5').update(url).digest('hex').slice(0, 12)
 }

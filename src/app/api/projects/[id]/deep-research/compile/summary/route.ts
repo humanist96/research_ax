@@ -3,6 +3,8 @@ import { getProject, saveDeepReportSection } from '@/lib/project/store'
 import { generateExecutiveSummary } from '@/lib/deep-research/report-compiler'
 import type { ReportOutline, SectionResearchResult } from '@/lib/deep-research/types'
 
+export const maxDuration = 60
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },

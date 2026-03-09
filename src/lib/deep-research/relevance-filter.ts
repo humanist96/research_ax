@@ -12,8 +12,12 @@ export async function filterRelevantArticles<T extends { readonly title: string;
     return articles
   }
 
-  const titlesBlock = articles
-    .map((a, i) => `[${i + 1}] "${a.title}"\n${a.content?.slice(0, 600) ?? '(내용 없음)'}`)
+  // Limit to 50 articles max to prevent token overflow in relevance scoring
+  const MAX_FOR_SCORING = 50
+  const candidates = articles.length > MAX_FOR_SCORING ? articles.slice(0, MAX_FOR_SCORING) : articles
+
+  const titlesBlock = candidates
+    .map((a, i) => `[${i + 1}] "${a.title}"\n${a.content?.slice(0, 300) ?? '(내용 없음)'}`)
     .join('\n\n')
 
   const prompt = `당신은 뉴스 기사 관련성 판정 전문가입니다. 각 기사가 해당 섹션 주제와 얼마나 관련 있는지 **점수**로 평가하세요.
@@ -23,7 +27,7 @@ export async function filterRelevantArticles<T extends { readonly title: string;
 - 설명: ${section.description}
 - 핵심 포인트: ${section.keyPoints.join(', ')}
 
-## 기사 목록 (${articles.length}건)
+## 기사 목록 (${candidates.length}건)
 ${titlesBlock}
 
 ## 평가 기준 (1~10점)
@@ -51,14 +55,14 @@ JSON 블록만 출력하세요.`
     const jsonMatch = raw.match(/```json\s*([\s\S]*?)\s*```/) ?? raw.match(/\{[\s\S]*\}/)
 
     if (!jsonMatch) {
-      return articles
+      return candidates
     }
 
     const jsonStr = jsonMatch[1] ?? jsonMatch[0]
     const parsed = JSON.parse(jsonStr) as { scores?: unknown }
 
     if (!Array.isArray(parsed.scores)) {
-      return articles
+      return candidates
     }
 
     const scoreMap = new Map<number, number>()
@@ -73,7 +77,7 @@ JSON 블록만 출력하세요.`
     }
 
     // Filter by threshold, then sort by score descending
-    const scored = articles
+    const scored = candidates
       .map((article, i) => ({ article, score: scoreMap.get(i) ?? 0, index: i }))
       .filter((item) => item.score >= RELEVANCE_THRESHOLD)
       .sort((a, b) => b.score - a.score)
@@ -81,8 +85,7 @@ JSON 블록만 출력하세요.`
     const filtered = scored.map((item) => item.article)
 
     if (filtered.length < MIN_ARTICLES) {
-      // Fall back to top-scored articles if threshold is too strict
-      const topScored = articles
+      const topScored = candidates
         .map((article, i) => ({ article, score: scoreMap.get(i) ?? 0 }))
         .sort((a, b) => b.score - a.score)
         .slice(0, MIN_ARTICLES)
@@ -92,6 +95,6 @@ JSON 블록만 출력하세요.`
 
     return filtered
   } catch {
-    return articles
+    return candidates
   }
 }
