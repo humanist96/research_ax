@@ -1,7 +1,12 @@
 import { NextRequest } from 'next/server'
 import * as crypto from 'crypto'
-import { getProject, getProjectNotebookLM, saveProjectNotebookLM, getLatestDeepReportMeta } from '@/lib/project/store'
+import { getProject, getProjectNotebookLM, saveProjectNotebookLM, getProjectReportIndex } from '@/lib/project/store'
 import type { ProjectNotebookLM } from '@/types/notebooklm'
+
+async function hasAnyReport(projectId: string): Promise<boolean> {
+  const index = await getProjectReportIndex(projectId)
+  return index.reports.length > 0
+}
 
 export async function POST(
   _request: NextRequest,
@@ -20,9 +25,9 @@ export async function POST(
       return Response.json({ success: true, data: existing })
     }
 
-    const meta = await getLatestDeepReportMeta(id)
-    if (!meta) {
-      return Response.json({ success: false, error: '딥리서치 보고서가 없습니다' }, { status: 400 })
+    const hasReport = await hasAnyReport(id)
+    if (!hasReport) {
+      return Response.json({ success: false, error: '보고서가 없습니다. 먼저 리포트를 생성하세요.' }, { status: 400 })
     }
 
     const notebookLM: ProjectNotebookLM = {
@@ -50,9 +55,9 @@ export async function GET(
     return Response.json({ success: false, error: 'Project not found' }, { status: 404 })
   }
 
-  // Check if a deep research report exists
-  const meta = await getLatestDeepReportMeta(id)
-  if (!meta) {
+  // Check if any report exists (standard or deep)
+  const hasReport = await hasAnyReport(id)
+  if (!hasReport) {
     return Response.json({ success: true, data: null, configured: false })
   }
 

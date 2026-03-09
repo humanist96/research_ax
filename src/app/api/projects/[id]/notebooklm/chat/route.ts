@@ -1,8 +1,20 @@
 import { NextRequest } from 'next/server'
-import { getProject, getLatestDeepReportMeta, getDeepReportMerged } from '@/lib/project/store'
+import { getProject, getLatestDeepReportMeta, getDeepReportMerged, getProjectReportIndex, getProjectReportContent } from '@/lib/project/store'
 import { callAI } from '@/lib/ai'
 
 export const maxDuration = 60
+
+async function loadReportMarkdown(projectId: string): Promise<string | null> {
+  const meta = await getLatestDeepReportMeta(projectId)
+  if (meta) {
+    const merged = await getDeepReportMerged(projectId, meta.reportId, 'md')
+    if (merged && typeof merged === 'string') return merged
+  }
+  const index = await getProjectReportIndex(projectId)
+  if (index.reports.length === 0) return null
+  const latestReport = index.reports[index.reports.length - 1]
+  return getProjectReportContent(projectId, latestReport.id)
+}
 
 export async function POST(
   request: NextRequest,
@@ -22,14 +34,9 @@ export async function POST(
       return Response.json({ success: false, error: 'question is required' }, { status: 400 })
     }
 
-    const meta = await getLatestDeepReportMeta(id)
-    if (!meta) {
-      return Response.json({ success: false, error: 'No report found' }, { status: 400 })
-    }
-
-    const markdown = await getDeepReportMerged(id, meta.reportId, 'md')
-    if (!markdown || typeof markdown !== 'string') {
-      return Response.json({ success: false, error: 'Report content not found' }, { status: 400 })
+    const markdown = await loadReportMarkdown(id)
+    if (!markdown) {
+      return Response.json({ success: false, error: 'No report content found' }, { status: 400 })
     }
 
     // Truncate report for context window
